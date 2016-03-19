@@ -24,7 +24,7 @@
 
 	<loggers>
 
-		<logger name="com.graffitab.server" level="debug" additivity="false">
+		<logger name="com.graffitab.server" level="info" additivity="false">
 			<appender-ref ref="FILE_APPENDER" />
 			<appender-ref ref="STANDARD_CONSOLE" />
 		</logger>
@@ -34,7 +34,7 @@
 			<appender-ref ref="STANDARD_CONSOLE" />
 		</logger>
 
-		<logger name="org.springframework.security" level="debug" additivity="false">
+		<logger name="org.springframework.security" level="info" additivity="false">
 			<appender-ref ref="FILE_APPENDER" />
 			<appender-ref ref="STANDARD_CONSOLE" />
 		</logger>

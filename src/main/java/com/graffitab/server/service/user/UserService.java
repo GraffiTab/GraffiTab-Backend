@@ -6,6 +6,8 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Criterion;
@@ -36,14 +38,13 @@ import com.graffitab.server.persistence.model.User.AccountStatus;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.asset.Asset.AssetType;
 import com.graffitab.server.service.PagingService;
+import com.graffitab.server.service.ProxyUtilities;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.email.EmailService;
 import com.graffitab.server.service.notification.NotificationService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
 import com.graffitab.server.util.PasswordGenerator;
-
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Created by david
@@ -97,6 +98,8 @@ public class UserService {
 	// 30 minutes
 	public static final Long RESET_PASSWORD_TOKEN_EXPIRATION_MS = 30 * 60 * 1000L;
 
+	private static ThreadLocal<User> threadLocalUserCache = new ThreadLocal<>();
+
 	@Transactional(readOnly = true)
 	public User getUser(Long id) {
 		User user = findUserById(id);
@@ -119,18 +122,35 @@ public class UserService {
 		}
 	}
 
-	@Transactional(readOnly = true)
 	public User getCurrentUser() {
-		// Cache this in a ThreadLocal
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null && auth.getPrincipal() != null) {
-			User currentUser = (User) auth.getPrincipal();
-			currentUser = findUserById(currentUser.getId());
-			return currentUser;
-		} else {
-			String msg = "Cannot get logged in user";
-			throw new UserNotLoggedInException(msg);
+
+		if (RunAsUser.get() != null) {
+			return RunAsUser.get();
 		}
+
+		User user = threadLocalUserCache.get();
+
+		if (user == null) {
+			// If no user is cached, we get it from the session
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth != null && auth.getPrincipal() != null) {
+				User currentUser = (User) auth.getPrincipal();
+
+				// Fully initialize the user, but avoid initializing collections inside collections
+				user = transactionUtils.executeInTransactionWithResult(() -> {
+					User storedUser = findUserById(currentUser.getId());
+					ProxyUtilities.initializeObjectWithOneLevelCollections(storedUser);
+					return storedUser;
+				});
+
+				threadLocalUserCache.set(user);
+			} else {
+				String msg = "Cannot get logged in user";
+				throw new UserNotLoggedInException(msg);
+			}
+		}
+
+		return user;
 	}
 
 	@Transactional(readOnly = true)
@@ -150,6 +170,7 @@ public class UserService {
 		User user = findUsersWithMetadataValues(String.format(EXTERNAL_PROVIDER_ID_KEY, externalProviderType.name()),
 				externalProviderToken);
 		User currentUser = getCurrentUser();
+		merge(currentUser);
 
 		// Check if a user with that externalId already exists.
 		if (user != null) {
@@ -166,6 +187,7 @@ public class UserService {
 	@Transactional
 	public void unlinkExternalProvider(ExternalProviderType externalProviderType) {
 		User currentUser = getCurrentUser();
+		merge(currentUser);
 
 		// User can only have 1 instance of a provider associated with their account, so delete it if it's found.
 		currentUser.getMetadataItems().remove(String.format(EXTERNAL_PROVIDER_ID_KEY, externalProviderType.name()));
@@ -275,8 +297,8 @@ public class UserService {
 	public User updateUser(User user) {
 		if (validationService.validateUser(user)) {
 			User currentUser = getCurrentUser();
+			merge(currentUser);
 			mapper.map(user, currentUser);
-
 			return currentUser;
 
 		} else {
@@ -304,102 +326,92 @@ public class UserService {
 
 	public Asset updateAvatar(InputStream assetInputStream, long contentLength) {
 		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
+		User user = getCurrentUser();
 
-		User user = transactionUtils.executeInTransactionWithResult(() -> {
-			User currentUser = getCurrentUser();
-			return currentUser;
+		String currentAvatarAssetGuid = null;
+
+		if (user.getAvatarAsset() != null) {
+			currentAvatarAssetGuid = user.getAvatarAsset().getGuid();
+		}
+
+		transactionUtils.executeInTransaction(() -> {
+			// Need to reassign, as 'user' is final in this lambda
+			// and we cannot change it
+			User storedUser = user;
+			storedUser.setAvatarAsset(assetToAdd);
 		});
 
 		datastoreService.saveAsset(assetInputStream, contentLength, assetToAdd.getGuid());
 
-		// Delete current avatar from store, if it exists.
-		if (user.getAvatarAsset() != null) {
-			datastoreService.deleteAsset(user.getAvatarAsset().getGuid());
+		if (currentAvatarAssetGuid != null) {
+			datastoreService.deleteAsset(currentAvatarAssetGuid);
 		}
-
-		transactionUtils.executeInTransaction(() -> {
-			User currentUser = getCurrentUser();
-
-			// Delete current avatar from database, if it exists.
-			if (currentUser.getAvatarAsset() != null) {
-				currentUser.setAvatarAsset(null);
-			}
-
-			currentUser.setAvatarAsset(assetToAdd);
-		});
 
 		return assetToAdd;
 	}
 
 	public void deleteAvatar() {
-		User user = transactionUtils.executeInTransactionWithResult(() -> {
-			User currentUser = getCurrentUser();
-			return currentUser;
-		});
+		User user = getCurrentUser();
 
 		// Delete current avatar from store, if it exists.
 		if (user.getAvatarAsset() != null) {
-			datastoreService.deleteAsset(user.getAvatarAsset().getGuid());
+
+			String avatarAsset = user.getAvatarAsset().getGuid();
+
+			transactionUtils.executeInTransaction(() -> {
+				// Need to reassign, as 'user' is final in this lambda
+				// and we cannot change it
+				User storedUser = user;
+				// Delete current avatar from database
+				storedUser.setAvatarAsset(null);
+			});
+
+			datastoreService.deleteAsset(avatarAsset);
 		}
-
-		transactionUtils.executeInTransaction(() -> {
-			User currentUser = getCurrentUser();
-
-			// Delete current avatar from database, if it exists.
-			if (currentUser.getAvatarAsset() != null) {
-				currentUser.setAvatarAsset(null);
-			}
-		});
 	}
 
 	public Asset updateCover(InputStream assetInputStream, long contentLength) {
 		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
+		User user = getCurrentUser();
 
-		User user = transactionUtils.executeInTransactionWithResult(() -> {
-			User currentUser = getCurrentUser();
-			return currentUser;
+		String currentCoverAssetGuid = null;
+
+		if (user.getCoverAsset() != null) {
+			currentCoverAssetGuid = user.getCoverAsset().getGuid();
+		}
+
+		transactionUtils.executeInTransaction(() -> {
+			// Need to reassign, as 'user' is final in this lambda
+		    // and we cannot change it
+			User storedUser = user;
+			storedUser.setCoverAsset(assetToAdd);
 		});
 
 		datastoreService.saveAsset(assetInputStream, contentLength, assetToAdd.getGuid());
 
-		// Delete current cover from store, if it exists.
-		if (user.getCoverAsset() != null) {
-			datastoreService.deleteAsset(user.getCoverAsset().getGuid());
+		if (currentCoverAssetGuid != null) {
+			datastoreService.deleteAsset(currentCoverAssetGuid);
 		}
-
-		transactionUtils.executeInTransaction(() -> {
-			User currentUser = getCurrentUser();
-
-			// Delete current cover from database, if it exists.
-			if (currentUser.getCoverAsset() != null) {
-				currentUser.setCoverAsset(null);
-			}
-
-			currentUser.setCoverAsset(assetToAdd);
-		});
 
 		return assetToAdd;
 	}
 
 	public void deleteCover() {
-		User user = transactionUtils.executeInTransactionWithResult(() -> {
-			User currentUser = getCurrentUser();
-			return currentUser;
-		});
+		User user = getCurrentUser();
 
 		// Delete current cover from store, if it exists.
 		if (user.getCoverAsset() != null) {
-			datastoreService.deleteAsset(user.getCoverAsset().getGuid());
+
+			String coverAssetGuid = user.getCoverAsset().getGuid();
+
+			transactionUtils.executeInTransaction(() -> {
+				User storedUser = user;
+				// Delete current cover from database
+				storedUser.setCoverAsset(null);
+			});
+
+			datastoreService.deleteAsset(coverAssetGuid);
 		}
-
-		transactionUtils.executeInTransaction(() -> {
-			User currentUser = getCurrentUser();
-
-			// Delete current cover from database, if it exists.
-			if (currentUser.getCoverAsset() != null) {
-				currentUser.setCoverAsset(null);
-			}
-		});
 	}
 
 	@Transactional
@@ -422,6 +434,7 @@ public class UserService {
 
 		if (toFollow != null) {
 			User currentUser = getCurrentUser();
+			merge(currentUser);
 
 			// Users can't follow themselves.
 			if (currentUser.equals(toFollow)) {
@@ -447,6 +460,7 @@ public class UserService {
 
 		if (toUnfollow != null) {
 			User currentUser = getCurrentUser();
+			merge(currentUser);
 
 			currentUser.getFollowing().remove(toUnfollow);
 
@@ -515,6 +529,7 @@ public class UserService {
 	public User changePassword(String currentPassword, String newPassword) {
 
 		User user = getCurrentUser();
+		merge(user);
 
 		// Check if the provided password matches the current password.
 		if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
@@ -613,5 +628,9 @@ public class UserService {
 	private String generateUserAccountActivationLink(String userToken) {
 		String activationLink = generateBaseLink() + "/api/users/activate/" + userToken;
 		return activationLink;
+	}
+
+	public void merge(User user) {
+		user = userDao.merge(user);
 	}
 }

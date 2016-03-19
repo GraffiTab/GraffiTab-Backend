@@ -26,6 +26,7 @@ public class DeviceService {
 	public void registerDevice(String token, OSType osType) {
 		Device device = findDevicesWithTokenAndType(token, osType);
 		User currentUser = userService.getCurrentUser();
+		userService.merge(currentUser);
 
 		// Check if a device with that token already exists.
 		if (device != null) {
@@ -40,6 +41,7 @@ public class DeviceService {
 	public void unregisterDevice(String token, OSType osType) {
 		Device device = findDevicesWithTokenAndType(token, osType);
 		User currentUser = userService.getCurrentUser();
+		userService.merge(currentUser);
 
 		// Check if a device with that token exists.
 		if (device == null) {

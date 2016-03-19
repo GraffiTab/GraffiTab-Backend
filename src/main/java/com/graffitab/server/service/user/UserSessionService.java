@@ -76,6 +76,7 @@ public class UserSessionService {
 			UserSession currentUserSession = findBySessionIdAndInitialize(session.getId());
 			if (currentUserSession == null) {
 				User currentUser = userService.getCurrentUser();
+				userService.merge(currentUser);
 				UserSession userSession = new UserSession();
 				userSession.setSessionId(session.getId());
 				userSession.setContent(sessionData);

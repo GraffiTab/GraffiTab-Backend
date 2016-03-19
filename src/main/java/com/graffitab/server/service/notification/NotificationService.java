@@ -84,8 +84,8 @@ public class NotificationService {
 	@Transactional
 	public void addCommentNotification(User user, User commenter, Streamable commentedStreamable, Comment comment) {
 		Notification notification = new NotificationComment(commenter, commentedStreamable, comment);
+		userService.merge(user);
 		user.getNotifications().add(notification);
-
 		sendNotificationAsync(user, notification);
 	}
 

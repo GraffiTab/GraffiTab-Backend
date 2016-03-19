@@ -30,6 +30,7 @@ public class LocationService {
 	@Transactional
 	public Location createLocation(String address, Double latitude, Double longitude) {
 		User currentUser = userService.getCurrentUser();
+		userService.merge(currentUser);
 		Location toAdd = Location.location(address, latitude, longitude);
 		currentUser.getLocations().add(toAdd);
 		Location persisted = locationDao.persist(toAdd);
@@ -42,6 +43,7 @@ public class LocationService {
 
 		if (toDelete != null) {
 			User currentUser = userService.getCurrentUser();
+			userService.merge(currentUser);
 			currentUser.getLocations().remove(toDelete);
 		}
 		else {

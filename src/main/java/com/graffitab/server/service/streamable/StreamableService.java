@@ -79,6 +79,7 @@ public class StreamableService {
 			User currentUser = userService.getCurrentUser();
 
 			if (!toLike.isLikedBy(currentUser)) {
+				userService.merge(currentUser);
 				toLike.getLikers().add(currentUser);
 
 				if (!toLike.getUser().equals(currentUser)) {
@@ -99,7 +100,7 @@ public class StreamableService {
 
 		if (toUnlike != null) {
 			User currentUser = userService.getCurrentUser();
-
+			userService.merge(currentUser);
 			toUnlike.getLikers().remove(currentUser);
 
 			return toUnlike;
