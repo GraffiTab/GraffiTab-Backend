@@ -25,4 +25,6 @@ public class NotificationDto {
 	private UserDto commenter;
 	private FullStreamableDto commentedStreamable;
 	private CommentDto comment;
+	private UserDto mentioner;
+	private FullStreamableDto mentionedStreamable;
 }

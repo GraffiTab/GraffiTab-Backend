@@ -18,6 +18,7 @@ import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.notification.NotificationComment;
 import com.graffitab.server.persistence.model.notification.NotificationFollow;
 import com.graffitab.server.persistence.model.notification.NotificationLike;
+import com.graffitab.server.persistence.model.notification.NotificationMention;
 import com.graffitab.server.persistence.model.notification.NotificationWelcome;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.service.PagingService;
@@ -101,6 +102,14 @@ public class NotificationService {
 		Notification notification = new NotificationComment(commenter, commentedStreamable, comment);
 		userService.merge(user);
 		user.getNotifications().add(notification);
+		sendNotificationAsync(user, notification);
+	}
+
+	@Transactional
+	public void addMentionNotification(User user, User mentioner, Streamable mentionedStreamable) {
+		Notification notification = new NotificationMention(mentioner, mentionedStreamable);
+		user.getNotifications().add(notification);
+
 		sendNotificationAsync(user, notification);
 	}
 

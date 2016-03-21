@@ -284,6 +284,20 @@ public class StreamableService {
 		return pagingService.getPagedItems(Streamable.class, StreamableDto.class, 0, PagingService.PAGE_SIZE_MAX_VALUE, query);
 	}
 
+	@Transactional
+	public Boolean hashtagExistsForStreamable(String hashtag, Streamable streamable) {
+		Query query = streamableDao.createQuery(
+				"select count(*) "
+			  + "from Streamable s "
+			  + "join s.hashtags h "
+			  + "where s = :currentStreamable and :tag in elements(h)");
+		query.setParameter("currentStreamable", streamable);
+		query.setParameter("tag", hashtag);
+
+		Long resultCount = (Long) query.uniqueResult();
+		return resultCount > 0;
+	}
+
 	@Transactional(readOnly = true)
 	public Streamable findStreamableById(Long id) {
 		return streamableDao.find(id);
@@ -316,7 +330,9 @@ public class StreamableService {
 				// We want to add the streamable to the user's feed as well.
 				followeesIds.add(currentUser.getId());
 
-				log.debug("Adding streamable to " + followeesIds.size() + " followers");
+				if (log.isDebugEnabled()) {
+					log.debug("Adding streamable to " + followeesIds.size() + " followers");
+				}
 
 				// For each follower, add the item to their feed.
 				followeesIds.forEach(userId -> {
@@ -327,7 +343,9 @@ public class StreamableService {
 					});
 				});
 
-				log.debug("Finished adding streamable to followers' feed");
+				if (log.isDebugEnabled()) {
+					log.debug("Finished adding streamable to followers' feed");
+				}
 			} catch (Throwable t) {
 				log.error("Error updating followers feed", t);
 			} finally {

@@ -1,13 +1,17 @@
 package com.graffitab.server.persistence.model.streamable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -20,6 +24,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
@@ -92,6 +97,12 @@ public abstract class Streamable implements Identifiable<Long> {
 	@JoinColumn(name = "streamable_id", nullable = false)
 	@OrderColumn(name = "order_key")
 	private List<Comment> comments = new ArrayList<>();
+
+	@ElementCollection
+    @Column(name="tag")
+    @CollectionTable(name="hashtag", joinColumns = @JoinColumn(name="streamable_id"))
+	@OrderColumn(name = "order_key")
+	private List<String> hashtags = new ArrayList<>();
 
 	@Override
 	public Long getId() {

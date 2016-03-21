@@ -1,5 +1,10 @@
 package com.graffitab.server.service.streamable;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.annotation.Resource;
 
 import org.hibernate.Query;
@@ -18,10 +23,17 @@ import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.notification.NotificationService;
+import com.graffitab.server.service.user.RunAsUser;
 import com.graffitab.server.service.user.UserService;
 
+import lombok.extern.log4j.Log4j;
+
+@Log4j
 @Service
 public class CommentService {
+
+	private static final Pattern HASH_PATTERN = Pattern.compile("#(\\w+|\\W+)");
+	private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+|\\W+)");
 
 	@Resource
 	private UserService userService;
@@ -43,6 +55,8 @@ public class CommentService {
 
 	@Resource
 	private HibernateDaoImpl<Comment, Long> commentDao;
+
+	private ExecutorService executor = Executors.newFixedThreadPool(2);
 
 	public Comment postComment(Long streamableId, String text) {
 		Streamable checked = transactionUtils.executeInTransactionWithResult(() -> {
@@ -66,6 +80,8 @@ public class CommentService {
 
 				return newComment;
 			});
+
+			parseCommentForSpecialSymbols(comment, checked);
 
 			return comment;
 		} else {
@@ -140,5 +156,60 @@ public class CommentService {
 	@Transactional(readOnly = true)
 	public Comment findCommentById(Long id) {
 		return commentDao.find(id);
+	}
+
+	private void parseCommentForSpecialSymbols(Comment comment, Streamable streamable) {
+		User currentUser = userService.getCurrentUser();
+		executor.submit(() -> {
+
+			if (log.isDebugEnabled()) {
+				log.debug("About to parse comment " + comment);
+			}
+
+			try {
+				RunAsUser.set(currentUser);
+
+				Matcher mention_mat = MENTION_PATTERN.matcher(comment.getText());
+				Matcher hash_mat = HASH_PATTERN.matcher(comment.getText());
+
+		    	// Parse for mentions.
+		    	while(mention_mat.find()) {
+		    		transactionUtils.executeInTransaction(() -> {
+		    			String match = mention_mat.group(1);
+
+						User foundUser = userService.findByUsername(match);
+						if (foundUser != null) {
+							if (!foundUser.equals(currentUser)) { // User can mention himself without notifications.
+								// Send notification.
+								notificationService.addMentionNotification(foundUser, currentUser, streamable);
+							}
+						}
+						else if (log.isDebugEnabled()) {
+							log.debug("Non-existing user found '" + match + "'");
+						}
+					});
+		    	}
+
+		    	// Parse for hashtags.
+		    	while (hash_mat.find()) {
+		    		transactionUtils.executeInTransaction(() -> {
+		    			String match = hash_mat.group(1);
+
+		    			if (!streamableService.hashtagExistsForStreamable(match, streamable)) {
+		    				Streamable inner = streamableService.findStreamableById(streamable.getId());
+			    			inner.getHashtags().add(match);
+		    			}
+		    		});
+		    	}
+
+		    	if (log.isDebugEnabled()) {
+		    		log.debug("Finished parsing comment");
+		    	}
+			} catch (Throwable t) {
+				log.error("Error parsing comment", t);
+			} finally {
+				RunAsUser.clear();
+			}
+		});
 	}
 }
