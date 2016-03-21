@@ -10,11 +10,11 @@ import com.graffitab.server.persistence.dao.Identifiable;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.Device;
 import com.graffitab.server.persistence.model.Location;
-import com.graffitab.server.persistence.model.User;
-import com.graffitab.server.persistence.model.UserSession;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.model.user.UserSession;
 
 @Configuration
 public class DaoConfig {

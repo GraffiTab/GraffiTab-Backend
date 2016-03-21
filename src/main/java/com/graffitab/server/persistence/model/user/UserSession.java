@@ -1,4 +1,4 @@
-package com.graffitab.server.persistence.model;
+package com.graffitab.server.persistence.model.user;
 
 import java.io.Serializable;
 

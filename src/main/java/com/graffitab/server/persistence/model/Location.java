@@ -13,6 +13,7 @@ import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
 
 import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.user.User;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

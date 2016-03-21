@@ -21,8 +21,8 @@ import com.graffitab.server.api.dto.streamable.result.GetFullStreamableResult;
 import com.graffitab.server.api.dto.user.UserDto;
 import com.graffitab.server.api.mapper.OrikaMapper;
 import com.graffitab.server.persistence.model.Comment;
-import com.graffitab.server.persistence.model.User.AccountStatus;
 import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.service.streamable.CommentService;
 import com.graffitab.server.service.streamable.StreamableService;
 
@@ -151,7 +151,7 @@ public class StreamableApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/searchlocation"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/search/location"}, method = RequestMethod.GET)
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<StreamableDto> searchStreamablesAtLocation(
@@ -160,5 +160,25 @@ public class StreamableApiController {
 			@RequestParam(value="swLatitude", required = true) Double swLatitude,
 			@RequestParam(value="swLongitude", required = true) Double swLongitude) {
 		return streamableService.searchStreamablesAtLocationResult(neLatitude, neLongitude, swLatitude, swLongitude);
+	}
+
+	@RequestMapping(value = {"/search/hashtag"}, method = RequestMethod.GET)
+	@Transactional
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public ListItemsResult<StreamableDto> searchStreamablesForHashtag(
+			@RequestParam(value="query", required = true) String query,
+			@RequestParam(value="offset", required = false) Integer offset,
+			@RequestParam(value="count", required = false) Integer count) {
+		return streamableService.searchStreamablesForHashtagResult(query, offset, count);
+	}
+
+	@RequestMapping(value = {"/search/hashtags"}, method = RequestMethod.GET)
+	@Transactional
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public ListItemsResult<String> searchHashtags(
+			@RequestParam(value="query", required = true) String query,
+			@RequestParam(value="offset", required = false) Integer offset,
+			@RequestParam(value="count", required = false) Integer count) {
+		return streamableService.searchHashtags(query, offset, count);
 	}
 }

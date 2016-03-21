@@ -1,4 +1,4 @@
-package com.graffitab.server.persistence.model;
+package com.graffitab.server.persistence.model.user;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +34,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.Device;
+import com.graffitab.server.persistence.model.Location;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.streamable.Streamable;

@@ -23,7 +23,6 @@ import com.graffitab.server.api.mapper.user.FullUserMapper;
 import com.graffitab.server.api.mapper.user.UserMapper;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.Location;
-import com.graffitab.server.persistence.model.User;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.notification.NotificationComment;
 import com.graffitab.server.persistence.model.notification.NotificationFollow;
@@ -31,6 +30,7 @@ import com.graffitab.server.persistence.model.notification.NotificationLike;
 import com.graffitab.server.persistence.model.notification.NotificationMention;
 import com.graffitab.server.persistence.model.notification.NotificationWelcome;
 import com.graffitab.server.persistence.model.streamable.StreamableGraffiti;
+import com.graffitab.server.persistence.model.user.User;
 
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;

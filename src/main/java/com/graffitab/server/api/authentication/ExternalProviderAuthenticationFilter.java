@@ -18,7 +18,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.graffitab.server.api.dto.user.ExternalProviderDto.ExternalProviderType;
 import com.graffitab.server.api.errors.EntityNotFoundException;
-import com.graffitab.server.persistence.model.User;
+import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.user.UserService;
 
 import lombok.extern.log4j.Log4j2;

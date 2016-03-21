@@ -13,7 +13,6 @@ import com.graffitab.server.api.dto.notification.NotificationDto;
 import com.graffitab.server.api.mapper.OrikaMapper;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.Comment;
-import com.graffitab.server.persistence.model.User;
 import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.notification.NotificationComment;
 import com.graffitab.server.persistence.model.notification.NotificationFollow;
@@ -21,6 +20,7 @@ import com.graffitab.server.persistence.model.notification.NotificationLike;
 import com.graffitab.server.persistence.model.notification.NotificationMention;
 import com.graffitab.server.persistence.model.notification.NotificationWelcome;
 import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.user.UserService;
 

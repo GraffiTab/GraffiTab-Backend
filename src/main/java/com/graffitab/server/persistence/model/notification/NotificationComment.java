@@ -6,8 +6,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import com.graffitab.server.persistence.model.Comment;
-import com.graffitab.server.persistence.model.User;
 import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.model.user.User;
 
 import lombok.Getter;
 import lombok.Setter;

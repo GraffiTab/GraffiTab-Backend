@@ -1,6 +1,6 @@
 package com.graffitab.server.service.user;
 
-import com.graffitab.server.persistence.model.User;
+import com.graffitab.server.persistence.model.user.User;
 
 /**
  *

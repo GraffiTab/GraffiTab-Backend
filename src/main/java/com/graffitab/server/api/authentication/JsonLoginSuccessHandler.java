@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import com.graffitab.server.api.dto.user.UserDto;
 import com.graffitab.server.api.dto.user.result.GetUserResult;
 import com.graffitab.server.api.mapper.OrikaMapper;
-import com.graffitab.server.persistence.model.User;
+import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.user.UserSessionService;
 
 public class JsonLoginSuccessHandler implements AuthenticationSuccessHandler {

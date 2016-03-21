@@ -18,11 +18,11 @@ import com.graffitab.server.api.dto.user.UserDto;
 import com.graffitab.server.api.errors.RestApiException;
 import com.graffitab.server.api.errors.ResultCode;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
-import com.graffitab.server.persistence.model.User;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.asset.Asset.AssetType;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.streamable.StreamableGraffiti;
+import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.notification.NotificationService;
@@ -244,6 +244,28 @@ public class StreamableService {
 		query.setParameter("swLongitude", swLongitude);
 
 		return pagingService.getPagedItems(Streamable.class, StreamableDto.class, 0, PagingService.PAGE_SIZE_MAX_VALUE, query);
+	}
+
+	@Transactional
+	public ListItemsResult<StreamableDto> searchStreamablesForHashtagResult(String hashtag, Integer offset, Integer count) {
+		// Filter out special characters to prevent SQL injection.
+		hashtag = hashtag.toLowerCase() + "%";
+
+		Query query = streamableDao.createNamedQuery("Streamable.searchStreamablesForHashtag");
+		query.setParameter("tag", hashtag);
+
+		return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
+	}
+
+	@Transactional
+	public ListItemsResult<String> searchHashtags(String hashtag, Integer offset, Integer count) {
+		// Filter out special characters to prevent SQL injection.
+		hashtag = hashtag.toLowerCase() + "%";
+
+		Query query = streamableDao.createNamedQuery("Streamable.searchHashtags");
+		query.setParameter("tag", hashtag);
+
+		return pagingService.getPagedItems(String.class, String.class, offset, count, query);
 	}
 
 	@Transactional

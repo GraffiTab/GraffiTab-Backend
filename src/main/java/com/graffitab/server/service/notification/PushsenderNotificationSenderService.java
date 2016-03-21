@@ -14,8 +14,8 @@ import org.springframework.util.StringUtils;
 import com.devsu.push.sender.service.async.AsyncAndroidPushService;
 import com.graffitab.server.persistence.model.Device;
 import com.graffitab.server.persistence.model.Device.OSType;
-import com.graffitab.server.persistence.model.User;
 import com.graffitab.server.persistence.model.notification.Notification;
+import com.graffitab.server.persistence.model.user.User;
 
 @Service
 public class PushsenderNotificationSenderService implements NotificationSenderService {

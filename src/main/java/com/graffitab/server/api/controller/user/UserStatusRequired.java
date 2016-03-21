@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.graffitab.server.persistence.model.User.AccountStatus;
+import com.graffitab.server.persistence.model.user.User.AccountStatus;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

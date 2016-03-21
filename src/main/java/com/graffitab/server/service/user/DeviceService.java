@@ -11,7 +11,7 @@ import com.graffitab.server.api.errors.ResultCode;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.Device;
 import com.graffitab.server.persistence.model.Device.OSType;
-import com.graffitab.server.persistence.model.User;
+import com.graffitab.server.persistence.model.user.User;
 
 @Service
 public class DeviceService {

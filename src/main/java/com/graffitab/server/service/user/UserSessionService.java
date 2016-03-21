@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import com.graffitab.server.api.errors.UserNotLoggedInException;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
-import com.graffitab.server.persistence.model.User;
-import com.graffitab.server.persistence.model.UserSession;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.model.user.UserSession;
 import com.graffitab.server.service.ProxyUtilities;
 import com.graffitab.server.service.TransactionUtils;
 

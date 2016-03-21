@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 
 import com.graffitab.server.api.errors.RestApiException;
 import com.graffitab.server.api.errors.ResultCode;
-import com.graffitab.server.persistence.model.User;
-import com.graffitab.server.persistence.model.User.AccountStatus;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.service.user.UserService;
 
 import lombok.extern.log4j.Log4j2;

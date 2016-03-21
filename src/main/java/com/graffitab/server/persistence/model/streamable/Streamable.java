@@ -33,8 +33,8 @@ import org.joda.time.DateTime;
 
 import com.graffitab.server.persistence.dao.Identifiable;
 import com.graffitab.server.persistence.model.Comment;
-import com.graffitab.server.persistence.model.User;
 import com.graffitab.server.persistence.model.asset.Asset;
+import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.util.BooleanToStringConverter;
 import com.graffitab.server.persistence.util.DateTimeToLongConverter;
 
@@ -79,7 +79,22 @@ import lombok.Setter;
 		query = "select count(*) "
 			  + "from Streamable s "
 			  + "join s.hashtags h "
-			  + "where s = :currentStreamable and :tag in elements(h)"
+			  + "where s = :currentStreamable and h = :tag"
+	),
+	@NamedQuery(
+		name = "Streamable.searchStreamablesForHashtag",
+		query = "select distinct s "
+			  + "from Streamable s "
+			  + "join s.hashtags h "
+			  + "where h like :tag "
+			  + "order by s.date desc"
+	),
+	@NamedQuery(
+		name = "Streamable.searchHashtags",
+		query = "select distinct h "
+			  + "from Streamable s "
+			  + "join s.hashtags h "
+			  + "where h like :tag"
 	),
 	@NamedQuery(
 		name = "Streamable.getUserStreamables",

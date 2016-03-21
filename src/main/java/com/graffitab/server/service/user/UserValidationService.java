@@ -5,7 +5,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.graffitab.server.persistence.model.User;
+import com.graffitab.server.persistence.model.user.User;
 
 @Service
 public class UserValidationService {
