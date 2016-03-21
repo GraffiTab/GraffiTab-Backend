@@ -80,7 +80,6 @@ public class StreamableApiController {
 	}
 
 	@RequestMapping(value = {"/{id}/comments"}, method = RequestMethod.POST)
-	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateCommentResult postComment(
 			@PathVariable("id") Long streamableId,

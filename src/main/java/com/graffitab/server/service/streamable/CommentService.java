@@ -27,6 +27,9 @@ public class CommentService {
 	private UserService userService;
 
 	@Resource
+	private StreamableService streamableService;
+
+	@Resource
 	private NotificationService notificationService;
 
 	@Resource
@@ -41,25 +44,30 @@ public class CommentService {
 	@Resource
 	private HibernateDaoImpl<Comment, Long> commentDao;
 
-	@Transactional
 	public Comment postComment(Long streamableId, String text) {
-		Streamable streamable = findStreamableById(streamableId);
+		Streamable checked = transactionUtils.executeInTransactionWithResult(() -> {
+			return streamableService.findStreamableById(streamableId);
+		});
 
-		if (streamable != null) {
-			User currentUser = userService.getCurrentUser();
+		if (checked != null) {
+			Comment comment = transactionUtils.executeInTransactionWithResult(() -> {
+				Streamable streamable = streamableService.findStreamableById(streamableId);
+				User currentUser = userService.getCurrentUser();
 
-			Comment comment = Comment.comment();
-			comment.setUser(currentUser);
-			comment.setText(text);
-			streamable.getComments().add(comment);
+				Comment newComment = Comment.comment();
+				newComment.setUser(currentUser);
+				newComment.setText(text);
+				streamable.getComments().add(newComment);
 
-			Comment persisted = commentDao.persist(comment);
-			if (!streamable.getUser().equals(currentUser)) {
-				// Send notification.
-				notificationService.addCommentNotification(streamable.getUser(), currentUser, streamable, persisted);
-			}
+				if (!streamable.getUser().equals(currentUser)) {
+					// Send notification.
+					notificationService.addCommentNotification(streamable.getUser(), currentUser, streamable, newComment);
+				}
 
-			return persisted;
+				return newComment;
+			});
+
+			return comment;
 		} else {
 			throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId + " not found");
 		}
@@ -67,7 +75,7 @@ public class CommentService {
 
 	@Transactional
 	public void deleteComment(Long streamableId, Long commentId) {
-		Streamable streamable = findStreamableById(streamableId);
+		Streamable streamable = streamableService.findStreamableById(streamableId);
 
 		if (streamable != null) {
 			Comment toDelete = findCommentById(commentId);
@@ -86,7 +94,7 @@ public class CommentService {
 
 	@Transactional
 	public Comment editComment(Long streamableId, Long commentId, String newText) {
-		Streamable streamable = findStreamableById(streamableId);
+		Streamable streamable = streamableService.findStreamableById(streamableId);
 
 		if (streamable != null) {
 			Comment toEdit = findCommentById(commentId);
@@ -113,7 +121,7 @@ public class CommentService {
 
 	@Transactional
 	public ListItemsResult<CommentDto> getCommentsResult(Long streamableId, Integer offset, Integer count) {
-		Streamable streamable = findStreamableById(streamableId);
+		Streamable streamable = streamableService.findStreamableById(streamableId);
 
 		if (streamable != null) {
 			Query query = streamableDao.createQuery(
@@ -127,11 +135,6 @@ public class CommentService {
 		} else {
 			throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId + " not found");
 		}
-	}
-
-	@Transactional(readOnly = true)
-	public Streamable findStreamableById(Long id) {
-		return streamableDao.find(id);
 	}
 
 	@Transactional(readOnly = true)
