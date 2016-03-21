@@ -14,6 +14,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
 import org.joda.time.DateTime;
 
 import com.graffitab.server.persistence.dao.Identifiable;
@@ -23,6 +25,24 @@ import com.graffitab.server.persistence.util.DateTimeToLongConverter;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+
+@NamedQueries({
+	@NamedQuery(
+		name = "Notification.getNotifications",
+		query = "select n "
+			  + "from User u "
+			  + "join u.notifications n "
+			  + "where u = :currentUser "
+			  + "order by n.date desc"
+	),
+	@NamedQuery(
+		name = "Notification.getUnreadNotificationsCount",
+		query = "select count(n) "
+			  + "from User u "
+			  + "join u.notifications n "
+			  + "where u = :currentUser and n.isRead = 'N'"
+	)
+})
 
 @Getter
 @Setter

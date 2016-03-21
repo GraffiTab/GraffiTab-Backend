@@ -308,12 +308,7 @@ public class UserService {
 		// TODO: Need to escape the characters to prevent SQL injection here.
 		userQuery = "%" + userQuery + "%";
 
-		Query query = userDao.createQuery(
-				"select u "
-			  + "from User u "
-			  + "where u.username like :username "
-			  + "or u.firstName like :firstName "
-			  + "or u.lastName like :lastName");
+		Query query = userDao.createNamedQuery("User.searchUser");
 		query.setParameter("username", userQuery);
 		query.setParameter("firstName", userQuery);
 		query.setParameter("lastName", userQuery);
@@ -561,12 +556,7 @@ public class UserService {
 
 	@Transactional
 	public ListItemsResult<UserDto> getMostActiveUsersResult(Integer offset, Integer count) {
-		Query query = userDao.createQuery(
-				"select u "
-			  + "from User u "
-			  + "left join u.streamables s "
-			  + "group by u.id "
-			  + "order by count(s) desc");
+		Query query = userDao.createNamedQuery("User.getMostActiveUsers");
 
 		return pagingService.getPagedItems(User.class, UserDto.class, offset, count, query);
 	}
@@ -574,13 +564,6 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public User findUserById(Long id) {
 		return userDao.find(id);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Transactional(readOnly = true)
-	public List<User> findAll() {
-		Query query = userDao.createNamedQuery("User.findAll");
-		return (List<User>) query.list();
 	}
 
 	@Transactional(readOnly = true)

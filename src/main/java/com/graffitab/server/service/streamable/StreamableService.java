@@ -125,11 +125,7 @@ public class StreamableService {
 		Streamable streamable = findStreamableById(streamableId);
 
 		if (streamable != null) {
-			Query query = streamableDao.createQuery(
-					"select u "
-				  + "from Streamable s "
-				  + "join s.likers u "
-				  + "where s = :currentStreamable");
+			Query query = streamableDao.createNamedQuery("User.getLikers");
 			query.setParameter("currentStreamable", streamable);
 
 			return pagingService.getPagedItems(User.class, UserDto.class, offset, count, query);
@@ -143,12 +139,7 @@ public class StreamableService {
 		User user = userService.findUserById(userId);
 
 		if (user != null) {
-			Query query = userDao.createQuery(
-					"select s "
-				  + "from User u "
-				  + "join u.streamables s "
-				  + "where u = :currentUser "
-				  + "order by s.date desc");
+			Query query = userDao.createNamedQuery("Streamable.getUserStreamables");
 			query.setParameter("currentUser", user);
 
 			return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
@@ -159,22 +150,14 @@ public class StreamableService {
 
 	@Transactional
 	public ListItemsResult<StreamableDto> getNewestStreamablesResult(Integer offset, Integer count) {
-		Query query = streamableDao.createQuery(
-				"select s "
-			  + "from Streamable s "
-			  + "order by s.date desc");
+		Query query = streamableDao.createNamedQuery("Streamable.getNewestStreamables");
 
 		return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
 	}
 
 	@Transactional
 	public ListItemsResult<StreamableDto> getPopularStreamablesResult(Integer offset, Integer count) {
-		Query query = streamableDao.createQuery(
-				"select s "
-			  + "from Streamable s "
-			  + "left join s.likers l "
-			  + "group by s.id "
-			  + "order by count(l) desc");
+		Query query = streamableDao.createNamedQuery("Streamable.getPopularStreamables");
 
 		return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
 	}
@@ -184,12 +167,7 @@ public class StreamableService {
 		User user = userService.findUserById(userId);
 
 		if (user != null) {
-			Query query = userDao.createQuery(
-					"select f "
-				  + "from User u "
-				  + "join u.feed f "
-				  + "where u = :currentUser "
-				  + "order by f.date desc");
+			Query query = userDao.createNamedQuery("Streamable.getUserFeed");
 			query.setParameter("currentUser", user);
 
 			return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
@@ -238,12 +216,7 @@ public class StreamableService {
 		User user = userService.findUserById(userId);
 
 		if (user != null) {
-			Query query = streamableDao.createQuery(
-					"select s "
-				  + "from Streamable s "
-				  + "join s.likers u "
-				  + "where u = :currentUser "
-				  + "order by s.date desc");
+			Query query = streamableDao.createNamedQuery("Streamable.getLikedStreamables");
 			query.setParameter("currentUser", user);
 
 			return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
@@ -256,12 +229,7 @@ public class StreamableService {
 	public ListItemsResult<StreamableDto> getPrivateStreamablesResult(Integer offset, Integer count) {
 		User currentUser = userService.getCurrentUser();
 
-		Query query = userDao.createQuery(
-				"select s "
-			  + "from User u "
-			  + "join u.streamables s "
-			  + "where u = :currentUser and s.isPrivate = 'Y' "
-			  + "order by s.date desc");
+		Query query = userDao.createNamedQuery("Streamable.getPrivateStreamables");
 		query.setParameter("currentUser", currentUser);
 
 		return pagingService.getPagedItems(Streamable.class, StreamableDto.class, offset, count, query);
@@ -269,13 +237,7 @@ public class StreamableService {
 
 	@Transactional
 	public ListItemsResult<StreamableDto> searchStreamablesAtLocationResult(Double neLatitude, Double neLongitude, Double swLatitude, Double swLongitude) {
-		Query query = streamableDao.createQuery(
-				"select s "
-			  + "from Streamable s "
-			  + "where s.latitude is not null and s.longitude is not null " // Check that the streamable has a location.
-			  + "and s.latitude <= :neLatitude and s.latitude >= :swLatitude " // Check that the streamable is inside the required GPS rectangle.
-			  + "and s.longitude >= :neLongitude and s.longitude <= :swLongitude "
-			  + "order by s.date desc");
+		Query query = streamableDao.createNamedQuery("Streamable.searchStreamablesAtLocation");
 		query.setParameter("neLatitude", neLatitude);
 		query.setParameter("swLatitude", swLatitude);
 		query.setParameter("neLongitude", neLongitude);
@@ -286,11 +248,7 @@ public class StreamableService {
 
 	@Transactional
 	public Boolean hashtagExistsForStreamable(String hashtag, Streamable streamable) {
-		Query query = streamableDao.createQuery(
-				"select count(*) "
-			  + "from Streamable s "
-			  + "join s.hashtags h "
-			  + "where s = :currentStreamable and :tag in elements(h)");
+		Query query = streamableDao.createNamedQuery("Streamable.hashtagExistsForStreamable");
 		query.setParameter("currentStreamable", streamable);
 		query.setParameter("tag", hashtag);
 
@@ -317,11 +275,7 @@ public class StreamableService {
 
 				// Get list of followers.
 				List<Long> followeesIds = transactionUtils.executeInTransactionWithResult(() -> {
-					Query query = userDao.createQuery(
-							"select f.id "
-						  + "from User u "
-						  + "join u.followers f "
-						  + "where u = :currentUser");
+					Query query = userDao.createNamedQuery("User.getFollowerIds");
 					query.setParameter("currentUser", currentUser);
 					List<Long> ids = (List<Long>) query.list();
 					return ids;

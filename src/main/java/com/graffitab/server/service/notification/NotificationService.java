@@ -48,12 +48,7 @@ public class NotificationService {
 	public ListItemsResult<NotificationDto> getNotificationsResult(Integer offset, Integer count) {
 		User currentUser = userService.getCurrentUser();
 
-		Query query = notificationDao.createQuery(
-				"select n "
-			  + "from User u "
-			  + "join u.notifications n "
-			  + "where u = :currentUser "
-			  + "order by n.date desc");
+		Query query = notificationDao.createNamedQuery("Notification.getNotifications");
 		query.setParameter("currentUser", currentUser);
 
 		return pagingService.getPagedItems(Notification.class, NotificationDto.class, offset, count, query);
@@ -63,11 +58,7 @@ public class NotificationService {
 	public Long getUnreadNotificationsCount() {
 		User currentUser = userService.getCurrentUser();
 
-		Query query = notificationDao.createQuery(
-				"select count(n) "
-			  + "from User u "
-			  + "join u.notifications n "
-			  + "where u = :currentUser and n.isRead = 'N'");
+		Query query = notificationDao.createNamedQuery("Notification.getUnreadNotificationsCount");
 		query.setParameter("currentUser", currentUser);
 
 		return (Long) query.uniqueResult();

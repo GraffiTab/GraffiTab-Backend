@@ -47,20 +47,53 @@ import lombok.Setter;
 
 @NamedQueries({
 	@NamedQuery(
-		name = "User.findAll",
-		query = "select u from User u"
-	),
-	@NamedQuery(
 		name = "User.findUsersWithEmail",
-		query = "select u from User u where u.email = :email and u.id != :userId"
+		query = "select u "
+			  + "from User u "
+			  + "where u.email = :email and u.id != :userId"
 	),
 	@NamedQuery(
 		name = "User.findUsersWithUsername",
-		query = "select u from User u where u.username = :username and u.id != :userId"
+		query = "select u "
+			  + "from User u "
+			  + "where u.username = :username and u.id != :userId"
 	),
 	@NamedQuery(
 		name = "User.findUsersWithMetadataValues",
-		query = "select u from User u join u.metadataItems mi where index(mi) = :metadataKey and :metadataValue in elements(mi)"
+		query = "select u "
+			  + "from User u "
+			  + "join u.metadataItems mi "
+			  + "where index(mi) = :metadataKey and :metadataValue in elements(mi)"
+	),
+	@NamedQuery(
+		name = "User.getFollowerIds",
+		query = "select f.id "
+			  + "from User u "
+			  + "join u.followers f "
+			  + "where u = :currentUser"
+	),
+	@NamedQuery(
+		name = "User.searchUser",
+		query = "select u "
+			  + "from User u "
+			  + "where u.username like :username "
+			  + "or u.firstName like :firstName "
+			  + "or u.lastName like :lastName"
+	),
+	@NamedQuery(
+		name = "User.getMostActiveUsers",
+		query = "select u "
+			  + "from User u "
+			  + "left join u.streamables s "
+			  + "group by u.id "
+			  + "order by count(s) desc"
+	),
+	@NamedQuery(
+		name = "User.getLikers",
+		query = "select u "
+			  + "from Streamable s "
+			  + "join s.likers u "
+			  + "where s = :currentStreamable"
 	)
 })
 

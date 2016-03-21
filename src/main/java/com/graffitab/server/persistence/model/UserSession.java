@@ -16,10 +16,10 @@ import javax.persistence.Version;
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
 
+import com.graffitab.server.persistence.dao.Identifiable;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import com.graffitab.server.persistence.dao.Identifiable;
 
 @NamedQueries({
 	@NamedQuery(
@@ -27,8 +27,14 @@ import com.graffitab.server.persistence.dao.Identifiable;
 		query = "select us from UserSession us where us.user = :user"
 	),
 	@NamedQuery(
-			name = "UserSession.deleteAllSessionsForUser",
-			query = "delete from UserSession us where us.user = :user"
+		name = "UserSession.deleteAllSessionsForUser",
+		query = "delete from UserSession us where us.user = :user"
+	),
+	@NamedQuery(
+		name = "UserSession.deleteSession",
+		query = "delete "
+			  + "from UserSession us "
+			  + "where sessionId = :sessionId"
 	)
 })
 

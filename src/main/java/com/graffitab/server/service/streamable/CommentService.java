@@ -140,11 +140,7 @@ public class CommentService {
 		Streamable streamable = streamableService.findStreamableById(streamableId);
 
 		if (streamable != null) {
-			Query query = streamableDao.createQuery(
-					"select c "
-				  + "from Streamable s "
-				  + "join s.comments c "
-				  + "where s = :currentStreamable");
+			Query query = streamableDao.createNamedQuery("Comment.getComments");
 			query.setParameter("currentStreamable", streamable);
 
 			return pagingService.getPagedItems(Comment.class, CommentDto.class, offset, count, query);

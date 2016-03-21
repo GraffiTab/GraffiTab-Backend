@@ -77,11 +77,7 @@ public class LocationService {
 	public ListItemsResult<LocationDto> getLocationsResult(Integer offset, Integer count) {
 		User currentUser = userService.getCurrentUser();
 
-		Query query = locationDao.createQuery(
-				"select l "
-			  + "from User u "
-			  + "join u.locations l "
-			  + "where u = :currentUser");
+		Query query = locationDao.createNamedQuery("Location.getLocations");
 		query.setParameter("currentUser", currentUser);
 
 		return pagingService.getPagedItems(Location.class, LocationDto.class, offset, count, query);
