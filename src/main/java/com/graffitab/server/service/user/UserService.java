@@ -639,4 +639,8 @@ public class UserService {
 	public void merge(User user) {
 		user = userDao.merge(user);
 	}
+
+	public static void clearThreadLocalUserCache() {
+		threadLocalUserCache.remove();
+	}
 }
