@@ -1,6 +1,9 @@
 package com.graffitab.server.config.spring.security;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityFilterAutoConfiguration;
@@ -24,7 +27,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 
-import com.graffitab.server.api.authentication.CustomFailureBasicAuthFilter;
+import com.graffitab.server.api.authentication.SessionPrecedenceBasicAuthFilter;
 import com.graffitab.server.api.authentication.ExternalProviderAuthenticationFilter;
 import com.graffitab.server.api.authentication.JsonAccessDeniedHandler;
 import com.graffitab.server.api.authentication.JsonLoginAuthenticationFilter;
@@ -37,24 +40,13 @@ import com.graffitab.server.service.GraffiTabUserDetailsService;
 @EnableWebSecurity
 @EnableAutoConfiguration(exclude={SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class, SpringBootWebSecurityConfiguration.class})
 @Import(SecurityBeansConfig.class)
+@Log4j2
 public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 		auth.authenticationProvider(daoAuthenticationProvider());
 	}
-
-//====  If multiple authentication providers are required ====
-//	@Bean
-//	public AuthenticationManager authenticationManager() {
-//		List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
-//		authenticationProviders.add(daoAuthenticationProvider());
-//		authenticationProviders.add(externalIdAuthenticationProvider());
-//
-//		ProviderManager authManager = new ProviderManager(authenticationProviders);
-//		authManager.setEraseCredentialsAfterAuthentication(false);
-//		return authManager;
-//	}
 
 	@Bean
 	public UserDetailsService graffiTabUserDetailsService() {
@@ -160,7 +152,10 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Configuration
     @Order(3)
-    public static class SessionAndBasicAuthSecurityConfig extends WebSecurityConfigurerAdapter{
+    public static class SessionAndBasicAuthSecurityConfig extends WebSecurityConfigurerAdapter {
+
+		@Value("${basicAuth.enabled:true}")
+		private String basicAuthEnabled;
 
 		@Autowired
 		private JsonLoginAuthenticationFilter jsonAuthenticationFilter;
@@ -192,9 +187,15 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
             // Add the custom authentication filter before the regular one
             http.addFilterBefore(jsonAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-            // Add the basic auth filter before the jsonLogin filter (check first)
-            http.addFilterBefore(new CustomFailureBasicAuthFilter(authenticationManager(), commonAuthenticationEntryPoint),
-            		    JsonLoginAuthenticationFilter.class);
+            Boolean basicAuthenticationEnabled = Boolean.parseBoolean(basicAuthEnabled);
+            if (basicAuthenticationEnabled) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Basic Authentication will be enabled");
+            	}
+	            // Add the basic auth filter before the jsonLogin filter (check first)
+	            http.addFilterBefore(new SessionPrecedenceBasicAuthFilter(authenticationManager(), commonAuthenticationEntryPoint),
+	            		    JsonLoginAuthenticationFilter.class);
+            }
 
             // Common entry points: 401 Unauthorized and access denied handlers
             http.exceptionHandling().authenticationEntryPoint(commonAuthenticationEntryPoint);
