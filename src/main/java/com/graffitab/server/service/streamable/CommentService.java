@@ -165,13 +165,13 @@ public class CommentService {
 			try {
 				RunAsUser.set(currentUser);
 
-				Matcher mention_mat = MENTION_PATTERN.matcher(comment.getText());
-				Matcher hash_mat = HASH_PATTERN.matcher(comment.getText());
+				Matcher mentionMatcher = MENTION_PATTERN.matcher(comment.getText());
+				Matcher hashtagMatcher = HASH_PATTERN.matcher(comment.getText());
 
 		    	// Parse for mentions.
-		    	while(mention_mat.find()) {
+		    	while(mentionMatcher.find()) {
 		    		transactionUtils.executeInTransaction(() -> {
-		    			String match = mention_mat.group(1);
+		    			String match = mentionMatcher.group(1);
 
 						User foundUser = userService.findByUsername(match);
 						if (foundUser != null) {
@@ -187,9 +187,9 @@ public class CommentService {
 		    	}
 
 		    	// Parse for hashtags.
-		    	while (hash_mat.find()) {
+		    	while (hashtagMatcher.find()) {
 		    		transactionUtils.executeInTransaction(() -> {
-		    			String match = hash_mat.group(1);
+		    			String match = hashtagMatcher.group(1);
 
 		    			if (!streamableService.hashtagExistsForStreamable(match, streamable)) {
 		    				Streamable inner = streamableService.findStreamableById(streamable.getId());
