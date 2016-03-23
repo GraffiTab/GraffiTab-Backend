@@ -37,4 +37,19 @@ public class ActivityLike extends Activity {
 		this.liker = liker;
 		this.likedStreamable = likedStreamable;
 	}
+
+	@Override
+	public boolean isSameActivity(Activity other) {
+		if (!isSameTypeOfActivity(other)) {
+			return false;
+		}
+
+		ActivityLike activityLike = (ActivityLike) other;
+		return activityLike.getLikedStreamable().equals(this.likedStreamable);
+	}
+
+	@Override
+	public User getActivityUser() {
+		return this.liker;
+	}
 }

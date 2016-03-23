@@ -19,17 +19,10 @@ public class PagingService {
 	public static final Integer PAGE_SIZE_MAX_VALUE = 20;
 
 	@Resource
-	private OrikaMapper mapper;
+	protected OrikaMapper mapper;
 
 	@Transactional
 	public <T, K> ListItemsResult<K> getPagedItems(Class<T> targetClass, Class<K> targetDtoClass, Integer offset, Integer count, Query query) {
-		offset = offset != null ? offset : 0;
-		count = count != null ? count : PAGE_SIZE_DEFAULT_VALUE;
-
-		// Guard against malicious input.
-		if (count > PAGE_SIZE_MAX_VALUE)
-			count = PAGE_SIZE_MAX_VALUE;
-
 		// Get list of entities.
 		PagedList<T> items = getItems(query, offset, count);
 
@@ -47,7 +40,14 @@ public class PagingService {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> PagedList<T> getItems(Query query, Integer offset, Integer count) {
+	protected <T> PagedList<T> getItems(Query query, Integer offset, Integer count) {
+		offset = offset != null ? Math.abs(offset) : 0;
+		count = count != null ? Math.abs(count) : PAGE_SIZE_DEFAULT_VALUE;
+
+		// Guard against malicious input.
+		if (count > PAGE_SIZE_MAX_VALUE)
+			count = PAGE_SIZE_MAX_VALUE;
+
 		query.setFirstResult(offset);
 		query.setMaxResults(count);
 

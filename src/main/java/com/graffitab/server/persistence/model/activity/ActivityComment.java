@@ -43,4 +43,19 @@ public class ActivityComment extends Activity {
 		this.commentedStreamable = commentedStreamable;
 		this.comment = comment;
 	}
+
+	@Override
+	public boolean isSameActivity(Activity other) {
+		if (!isSameTypeOfActivity(other)) {
+			return false;
+		}
+
+		ActivityComment activityComment = (ActivityComment) other;
+		return activityComment.getCommentedStreamable().equals(this.commentedStreamable);
+	}
+
+	@Override
+	public User getActivityUser() {
+		return this.commenter;
+	}
 }

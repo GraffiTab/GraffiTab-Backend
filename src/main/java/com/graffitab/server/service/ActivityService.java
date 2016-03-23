@@ -6,9 +6,14 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.Resource;
 
+import org.hibernate.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.graffitab.server.api.dto.ListItemsResult;
+import com.graffitab.server.api.dto.activity.ActivityContainerDto;
 import com.graffitab.server.api.mapper.OrikaMapper;
+import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.activity.Activity;
 import com.graffitab.server.persistence.model.activity.ActivityComment;
@@ -17,6 +22,7 @@ import com.graffitab.server.persistence.model.activity.ActivityFollow;
 import com.graffitab.server.persistence.model.activity.ActivityLike;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.service.paging.ActivityPagingService;
 import com.graffitab.server.service.user.UserService;
 
 import lombok.extern.log4j.Log4j;
@@ -29,7 +35,10 @@ public class ActivityService {
 	private UserService userService;
 
 	@Resource
-	private PagingService pagingService;
+	private ActivityPagingService activityPagingService;
+
+	@Resource
+	private HibernateDaoImpl<Activity, Long> activityDao;
 
 	@Resource
 	private OrikaMapper mapper;
@@ -38,6 +47,16 @@ public class ActivityService {
 	private TransactionUtils transactionUtils;
 
 	private ExecutorService executor = Executors.newFixedThreadPool(2);
+
+	@Transactional
+	public ListItemsResult<ActivityContainerDto> getFollowersActivityResult(Integer numberOfItemsInGroup, Integer offset, Integer count) {
+		User currentUser = userService.getCurrentUser();
+
+		Query query = activityDao.createNamedQuery("Activity.getFollowersActivity");
+		query.setParameter("currentUser", currentUser);
+
+		return activityPagingService.getPagedItems(Activity.class, ActivityContainerDto.class, numberOfItemsInGroup, offset, count, query);
+	}
 
 	public void addCreateStreamableActivityAsync(User creator, Streamable createdStreamable) {
 		Activity activity = new ActivityCreateStreamable(creator, createdStreamable);

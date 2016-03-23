@@ -19,6 +19,7 @@ import org.hibernate.annotations.NamedQuery;
 import org.joda.time.DateTime;
 
 import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.util.DateTimeToLongConverter;
 
 import lombok.EqualsAndHashCode;
@@ -81,4 +82,11 @@ public abstract class Activity implements Identifiable<Long> {
 		this.activityType = activityType;
 		this.date = new DateTime();
 	}
+
+	public boolean isSameTypeOfActivity(Activity other) {
+		return this.activityType == other.activityType && getActivityUser().equals(other.getActivityUser());
+	}
+
+	public abstract boolean isSameActivity(Activity other);
+	public abstract User getActivityUser();
 }

@@ -36,4 +36,19 @@ public class ActivityFollow extends Activity {
 		this.followed = followed;
 		this.follower = follower;
 	}
+
+	@Override
+	public boolean isSameActivity(Activity other) {
+		if (!isSameTypeOfActivity(other)) {
+			return false;
+		}
+
+		ActivityFollow activityFollow = (ActivityFollow) other;
+		return activityFollow.getFollowed().equals(this.followed);
+	}
+
+	@Override
+	public User getActivityUser() {
+		return this.follower;
+	}
 }

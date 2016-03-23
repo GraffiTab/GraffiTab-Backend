@@ -37,4 +37,14 @@ public class ActivityCreateStreamable extends Activity {
 		this.creator = creator;
 		this.createdStreamable = createdStreamable;
 	}
+
+	@Override
+	public boolean isSameActivity(Activity other) {
+		return false;
+	}
+
+	@Override
+	public User getActivityUser() {
+		return this.creator;
+	}
 }

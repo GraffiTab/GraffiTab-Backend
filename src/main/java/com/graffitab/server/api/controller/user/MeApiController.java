@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.graffitab.server.api.dto.ActionCompletedResult;
 import com.graffitab.server.api.dto.CountResult;
 import com.graffitab.server.api.dto.ListItemsResult;
+import com.graffitab.server.api.dto.activity.ActivityContainerDto;
 import com.graffitab.server.api.dto.asset.AssetDto;
 import com.graffitab.server.api.dto.asset.result.CreateAssetResult;
 import com.graffitab.server.api.dto.device.DeviceDto;
@@ -48,6 +49,7 @@ import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.model.user.User.AccountStatus;
+import com.graffitab.server.service.ActivityService;
 import com.graffitab.server.service.notification.NotificationService;
 import com.graffitab.server.service.streamable.StreamableService;
 import com.graffitab.server.service.user.DeviceService;
@@ -66,6 +68,9 @@ public class MeApiController {
 
 	@Resource
 	private NotificationService notificationService;
+
+	@Resource
+	private ActivityService activityService;
 
 	@Resource
 	private DeviceService deviceService;
@@ -113,6 +118,16 @@ public class MeApiController {
 		Long count = notificationService.getUnreadNotificationsCount();
 		countResult.setCount(count);
 		return countResult;
+	}
+
+	@RequestMapping(value = {"/activity/followers"}, method = RequestMethod.GET)
+	@Transactional(readOnly = true)
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public ListItemsResult<ActivityContainerDto> getFollowersActivity(
+			@RequestParam(value="numberOfItemsInGroup", required = false) Integer numberOfItemsInGroup,
+			@RequestParam(value="offset", required = false) Integer offset,
+			@RequestParam(value="count", required = false) Integer count) {
+		return activityService.getFollowersActivityResult(numberOfItemsInGroup, offset, count);
 	}
 
 	@RequestMapping(value = {""}, method = RequestMethod.POST, consumes={"application/json"})

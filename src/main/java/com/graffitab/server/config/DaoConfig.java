@@ -10,6 +10,7 @@ import com.graffitab.server.persistence.dao.Identifiable;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.Device;
 import com.graffitab.server.persistence.model.Location;
+import com.graffitab.server.persistence.model.activity.Activity;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.streamable.Streamable;
@@ -57,6 +58,11 @@ public class DaoConfig {
 	@Bean
 	public HibernateDaoImpl<Location, Long> locationDao() {
 		return generateDao(Location.class);
+	}
+
+	@Bean
+	public HibernateDaoImpl<Activity, Long> activityDao() {
+		return generateDao(Activity.class);
 	}
 
 	private <T extends Identifiable<K>,K extends Serializable> HibernateDaoImpl<T,K> generateDao(Class<T> entityClass) {
