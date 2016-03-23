@@ -13,7 +13,7 @@ import com.graffitab.server.api.errors.ResultCode;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.Location;
 import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.service.PagingService;
+import com.graffitab.server.service.paging.PagingService;
 
 @Service
 public class LocationService {

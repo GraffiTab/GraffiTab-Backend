@@ -22,9 +22,9 @@ import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.ActivityService;
-import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.notification.NotificationService;
+import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.RunAsUser;
 import com.graffitab.server.service.user.UserService;
 

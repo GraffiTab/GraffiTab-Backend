@@ -11,7 +11,6 @@ import com.graffitab.server.api.dto.ListItemsResult;
 import com.graffitab.server.persistence.model.PagedList;
 import com.graffitab.server.persistence.model.activity.Activity;
 import com.graffitab.server.persistence.model.activity.ActivityContainer;
-import com.graffitab.server.service.PagingService;
 
 @Service
 public class ActivityPagingService extends PagingService {

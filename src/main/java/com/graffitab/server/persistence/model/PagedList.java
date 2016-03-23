@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.graffitab.server.service.PagingService;
+import com.graffitab.server.service.paging.PagingService;
 
 import lombok.Getter;
 import lombok.Setter;

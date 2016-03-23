@@ -22,8 +22,8 @@ import com.graffitab.server.persistence.model.notification.NotificationMention;
 import com.graffitab.server.persistence.model.notification.NotificationWelcome;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.TransactionUtils;
+import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
 
 import lombok.extern.log4j.Log4j;

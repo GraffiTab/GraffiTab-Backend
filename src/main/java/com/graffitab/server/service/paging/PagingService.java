@@ -1,4 +1,4 @@
-package com.graffitab.server.service;
+package com.graffitab.server.service.paging;
 
 import java.util.List;
 
