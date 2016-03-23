@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
+import org.javatuples.Pair;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +32,7 @@ import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.asset.Asset.AssetType;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.model.user.User.AccountStatus;
+import com.graffitab.server.service.ActivityService;
 import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.ProxyUtilities;
 import com.graffitab.server.service.TransactionUtils;
@@ -82,6 +84,9 @@ public class UserService {
 	@Resource
 	private PagingService pagingService;
 
+	@Resource
+	private ActivityService activityService;
+
 	public static final String ACTIVATION_TOKEN_METADATA_KEY = "activationToken";
 	public static final String ACTIVATION_TOKEN_DATE_METADATA_KEY = "activationTokenDate";
 	public static final String RESET_PASSWORD_ACTIVATION_TOKEN = "resetPasswordToken";
@@ -95,6 +100,15 @@ public class UserService {
 	public static final Long RESET_PASSWORD_TOKEN_EXPIRATION_MS = 30 * 60 * 1000L;
 
 	private static ThreadLocal<User> threadLocalUserCache = new ThreadLocal<>();
+
+	@Transactional
+	public List<Long> getUserFollowersIds(User user) {
+		Query query = userDao.createNamedQuery("User.getFollowerIds");
+		query.setParameter("currentUser", user);
+		@SuppressWarnings("unchecked")
+		List<Long> ids = (List<Long>) query.list();
+		return ids;
+	}
 
 	@Transactional(readOnly = true)
 	public User getUser(Long id) {
@@ -206,30 +220,33 @@ public class UserService {
 		return user;
 	}
 
-	@Transactional
 	public User activateUser(String token) {
-		User user = findUsersWithMetadataValues(ACTIVATION_TOKEN_METADATA_KEY, token);
+		User user = transactionUtils.executeInTransactionWithResult(() -> {
+			User innerUser = findUsersWithMetadataValues(ACTIVATION_TOKEN_METADATA_KEY, token);
 
-		if (user == null) {
-			throw new EntityNotFoundException(ResultCode.NOT_FOUND, "Could not find token " + token);
-		}
+			if (innerUser == null) {
+				throw new EntityNotFoundException(ResultCode.NOT_FOUND, "Could not find token " + token);
+			}
 
-		Long tokenDate = Long.parseLong(user.getMetadataItems().get(ACTIVATION_TOKEN_DATE_METADATA_KEY));
-		Long now = System.currentTimeMillis();
+			Long tokenDate = Long.parseLong(innerUser.getMetadataItems().get(ACTIVATION_TOKEN_DATE_METADATA_KEY));
+			Long now = System.currentTimeMillis();
 
-		if ((now - tokenDate) > ACTIVATION_TOKEN_EXPIRATION_MS) {
-			throw new RestApiException(ResultCode.TOKEN_EXPIRED, "This token has expired.");
-		}
+			if ((now - tokenDate) > ACTIVATION_TOKEN_EXPIRATION_MS) {
+				throw new RestApiException(ResultCode.TOKEN_EXPIRED, "This token has expired.");
+			}
 
-		if (user.getAccountStatus() != AccountStatus.PENDING_ACTIVATION) {
-			throw new RestApiException(ResultCode.USER_NOT_IN_EXPECTED_STATE, "Current user is not in the expected state " +
-					AccountStatus.PENDING_ACTIVATION.name());
-		}
+			if (innerUser.getAccountStatus() != AccountStatus.PENDING_ACTIVATION) {
+				throw new RestApiException(ResultCode.USER_NOT_IN_EXPECTED_STATE, "Current user is not in the expected state " +
+						AccountStatus.PENDING_ACTIVATION.name());
+			}
 
-		user.setAccountStatus(AccountStatus.ACTIVE);
+			innerUser.setAccountStatus(AccountStatus.ACTIVE);
 
-		// Send notification.
-		notificationService.addWelcomeNotification(user);
+			return innerUser;
+		});
+
+		// Add notification to the activated user.
+		notificationService.addWelcomeNotificationAsync(user);
 
 		return user;
 	}
@@ -263,23 +280,34 @@ public class UserService {
 			ExternalProviderType externalProviderType) {
 		if (validationService.validateUser(user)) {
 			if (user.getId() == null) {
-				transactionUtils.executeInNewTransaction(() -> {
-					user.setPassword(passwordEncoder.encode(PasswordGenerator.generatePassword()));
-					user.setGuid(GuidGenerator.generate());
-					user.setAccountStatus(AccountStatus.ACTIVE);
-					user.getMetadataItems().put(String.format(EXTERNAL_PROVIDER_ID_KEY, externalProviderType.name()),
-							externalProviderId);
-					user.getMetadataItems().put(String.format(EXTERNAL_PROVIDER_TOKEN_KEY, externalProviderType.name()),
+				User validatedExternalProviderUser = transactionUtils.executeInTransactionWithResult(() -> {
+					return findUsersWithMetadataValues(String.format(EXTERNAL_PROVIDER_ID_KEY, externalProviderType.name()),
 							externalProviderToken);
-					userDao.persist(user);
-
-					// Send notification.
-					notificationService.addWelcomeNotification(user);
 				});
 
-				emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail());
+				if (validatedExternalProviderUser == null) {
+					transactionUtils.executeInTransaction(() -> {
+						user.setPassword(passwordEncoder.encode(PasswordGenerator.generatePassword()));
+						user.setGuid(GuidGenerator.generate());
+						user.setAccountStatus(AccountStatus.ACTIVE);
+						user.getMetadataItems().put(String.format(EXTERNAL_PROVIDER_ID_KEY, externalProviderType.name()),
+								externalProviderId);
+						user.getMetadataItems().put(String.format(EXTERNAL_PROVIDER_TOKEN_KEY, externalProviderType.name()),
+								externalProviderToken);
+						userDao.persist(user);
+					});
 
-				return user;
+					emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail());
+
+					// Add notification to the new user.
+					notificationService.addWelcomeNotificationAsync(user);
+
+					return user;
+				}
+				else {
+					throw new RestApiException(ResultCode.BAD_REQUEST,
+							"This external provider is already used for another user.");
+				}
 			} else {
 				throw new RestApiException(ResultCode.BAD_REQUEST,
 						"ID has been provided to create endpoint -- This is not allowed");
@@ -434,30 +462,44 @@ public class UserService {
 		return pagingService.getPagedItems(User.class, UserDto.class, offset, count, query);
 	}
 
-	@Transactional
 	public User follow(Long toFollowId) {
-		User toFollow = findUserById(toFollowId);
+		User currentUser = getCurrentUser();
 
-		if (toFollow != null) {
-			User currentUser = getCurrentUser();
-			merge(currentUser);
+		Pair<User, Boolean> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
+			User toFollow = findUserById(toFollowId);
 
-			// Users can't follow themselves.
-			if (currentUser.equals(toFollow)) {
-				throw new RestApiException(ResultCode.BAD_REQUEST, "You cannot follow yourself");
+			if (toFollow != null) {
+				Boolean isFollowed = false;
+
+				// Users can't follow themselves.
+				if (currentUser.equals(toFollow)) {
+					throw new RestApiException(ResultCode.BAD_REQUEST, "You cannot follow yourself");
+				}
+
+				if (!currentUser.isFollowing(toFollow)) {
+					User innerCurrentUser = findUserById(currentUser.getId());
+					innerCurrentUser.getFollowing().add(toFollow);
+					isFollowed = true;
+				}
+
+				return new Pair<User, Boolean>(toFollow, isFollowed);
+			} else {
+				throw new RestApiException(ResultCode.USER_NOT_FOUND, "User with id " + toFollowId + " not found");
 			}
+		});
 
-			if (!currentUser.isFollowing(toFollow)) {
-				currentUser.getFollowing().add(toFollow);
+		User followedUser = resultPair.getValue0();
+		Boolean followed = resultPair.getValue1();
 
-				// Send notification.
-				notificationService.addFollowNotification(toFollow, currentUser);
-			}
+		// Add notification to the followed user if they have been followed.
+		if (followed) {
+			notificationService.addFollowNotificationAsync(followedUser, currentUser);
 
-			return toFollow;
-		} else {
-			throw new RestApiException(ResultCode.USER_NOT_FOUND, "User with id " + toFollowId + " not found");
+			// Add activity to each follower of the user.
+			activityService.addFollowActivityAsync(currentUser, followedUser);
 		}
+
+		return resultPair.getValue0();
 	}
 
 	@Transactional

@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import javax.annotation.Resource;
 
 import org.hibernate.Query;
+import org.javatuples.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import com.graffitab.server.persistence.model.asset.Asset.AssetType;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.streamable.StreamableGraffiti;
 import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.service.ActivityService;
 import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.notification.NotificationService;
@@ -52,6 +54,9 @@ public class StreamableService {
 	private PagingService pagingService;
 
 	@Resource
+	private ActivityService activityService;
+
+	@Resource
 	private HibernateDaoImpl<Streamable, Long> streamableDao;
 
 	@Resource
@@ -77,32 +82,50 @@ public class StreamableService {
 			return streamableGraffiti;
 		});
 
+		// Update the current user stream and the streams of all his followers.
 		addStreamableToOwnAndFollowersStream(streamable);
+
+		// Add activity to all followers.
+		activityService.addCreateStreamableActivityAsync(streamable.getUser(), streamable);
 
 		return streamable;
 	}
 
-	@Transactional
 	public Streamable like(Long toLikeId) {
-		Streamable toLike = findStreamableById(toLikeId);
+		User currentUser = userService.getCurrentUser();
 
-		if (toLike != null) {
-			User currentUser = userService.getCurrentUser();
+		Pair<Streamable, Boolean> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
+			Streamable innerStreamable = findStreamableById(toLikeId);
 
-			if (!toLike.isLikedBy(currentUser)) {
-				userService.merge(currentUser);
-				toLike.getLikers().add(currentUser);
+			if (innerStreamable != null) {
+				Boolean liked = false;
 
-				if (!toLike.getUser().equals(currentUser)) {
-					// Send notification.
-					notificationService.addLikeNotification(toLike.getUser(), currentUser, toLike);
+				if (!innerStreamable.isLikedBy(currentUser)) {
+					User innerUser = userService.findUserById(currentUser.getId());
+					innerStreamable.getLikers().add(innerUser);
+					liked = true;
 				}
-			}
 
-			return toLike;
-		} else {
-			throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + toLikeId + " not found");
+				return new Pair<Streamable, Boolean>(innerStreamable, liked);
+			} else {
+				throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + toLikeId + " not found");
+			}
+		});
+
+		Streamable streamable = resultPair.getValue0();
+		Boolean liked = resultPair.getValue1();
+
+		// Add notification to the owner of the streamable.
+		if (liked && !streamable.getUser().equals(currentUser)) {
+			notificationService.addLikeNotificationAsync(streamable.getUser(), currentUser, streamable);
 		}
+
+		if (liked) {
+			// Add activity to each follower of the user.
+			activityService.addLikeActivityAsync(currentUser, streamable);
+		}
+
+		return streamable;
 	}
 
 	@Transactional

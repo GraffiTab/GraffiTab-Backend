@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 
 import org.hibernate.Query;
+import org.javatuples.Pair;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.service.ActivityService;
 import com.graffitab.server.service.PagingService;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.notification.NotificationService;
@@ -42,6 +44,9 @@ public class CommentService {
 	private StreamableService streamableService;
 
 	@Resource
+	private ActivityService activityService;
+
+	@Resource
 	private NotificationService notificationService;
 
 	@Resource
@@ -59,34 +64,38 @@ public class CommentService {
 	private ExecutorService executor = Executors.newFixedThreadPool(2);
 
 	public Comment postComment(Long streamableId, String text) {
-		Streamable checked = transactionUtils.executeInTransactionWithResult(() -> {
-			return streamableService.findStreamableById(streamableId);
-		});
+		Pair<Streamable, Comment> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
+			Streamable streamable = streamableService.findStreamableById(streamableId);
 
-		if (checked != null) {
-			Comment comment = transactionUtils.executeInTransactionWithResult(() -> {
-				Streamable streamable = streamableService.findStreamableById(streamableId);
+			if (streamable != null) {
 				User currentUser = userService.getCurrentUser();
 
-				Comment newComment = Comment.comment();
-				newComment.setUser(currentUser);
-				newComment.setText(text);
-				streamable.getComments().add(newComment);
+				Comment comment = Comment.comment();
+				comment.setUser(currentUser);
+				comment.setText(text);
+				streamable.getComments().add(comment);
 
-				if (!streamable.getUser().equals(currentUser)) {
-					// Send notification.
-					notificationService.addCommentNotification(streamable.getUser(), currentUser, streamable, newComment);
-				}
+				return new Pair<Streamable, Comment>(streamable, comment);
+			} else {
+				throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId + " not found");
+			}
+		});
 
-				return newComment;
-			});
+		Streamable streamable = resultPair.getValue0();
+		Comment comment = resultPair.getValue1();
 
-			parseCommentForSpecialSymbols(comment, checked);
-
-			return comment;
-		} else {
-			throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId + " not found");
+		// Add notification to the owner of the streamable.
+		if (!streamable.getUser().equals(comment.getUser())) {
+			notificationService.addCommentNotificationAsync(streamable.getUser(), comment.getUser(), streamable, comment);
 		}
+
+		// Process comment for hashtags and mentions.
+		parseCommentForSpecialSymbols(comment, streamable);
+
+		// Add activity to each follower of the user.
+		activityService.addCommentActivityAsync(comment.getUser(), streamable, comment);
+
+		return comment;
 	}
 
 	@Transactional
@@ -176,8 +185,7 @@ public class CommentService {
 						User foundUser = userService.findByUsername(match);
 						if (foundUser != null) {
 							if (!foundUser.equals(currentUser)) { // User can mention himself without notifications.
-								// Send notification.
-								notificationService.addMentionNotification(foundUser, currentUser, streamable);
+								notificationService.addMentionNotificationAsync(foundUser, currentUser, streamable);
 							}
 						}
 						else if (log.isDebugEnabled()) {

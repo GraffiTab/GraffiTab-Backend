@@ -3,6 +3,7 @@ package com.graffitab.server.service.user;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.graffitab.server.persistence.model.user.User;
@@ -13,6 +14,7 @@ public class UserValidationService {
 	@Resource
 	private UserService userService;
 
+	@Transactional
 	public Boolean validateUser(User user) {
 
 		boolean validationResult = false;

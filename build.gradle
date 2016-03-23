@@ -76,6 +76,7 @@ def jodaTimeVersion = "2.9.2"
 def jadiraVersion = "5.0.0.GA"
 def sendgridVersion = "2.2.2"
 def pushSenderVersion = "1.0.2"
+def javatuplesVersion = "1.2"
 
 def commonsFileuploadVersion = "1.3.1"
 //http://docs.spring.io/spring-security/site/migrate/current/3-to-4/html5/migrate-3-to-4-jc.html
@@ -163,6 +164,8 @@ dependencies {
    compile "org.jadira.usertype:usertype.core:$jadiraVersion"
 
    compile "com.devsu:push-sender:$pushSenderVersion"
+
+   compile "org.javatuples:javatuples:$javatuplesVersion"
 
    // for OAuth 2.0
    compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.8.RELEASE'

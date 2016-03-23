@@ -50,7 +50,6 @@ public class StreamableApiController {
 	}
 
 	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.POST)
-	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult like(@PathVariable("id") Long streamableId) {
 		GetFullStreamableResult getFullStreamableResult = new GetFullStreamableResult();

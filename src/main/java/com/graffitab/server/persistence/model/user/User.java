@@ -36,6 +36,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.graffitab.server.persistence.dao.Identifiable;
 import com.graffitab.server.persistence.model.Device;
 import com.graffitab.server.persistence.model.Location;
+import com.graffitab.server.persistence.model.activity.Activity;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.streamable.Streamable;
@@ -200,6 +201,11 @@ public class User implements Identifiable<Long>, UserDetails {
 			   inverseJoinColumns = {@JoinColumn(name = "streamable_id")})
 	@OrderColumn(name = "order_key")
 	private List<Streamable> feed = new ArrayList<>();
+
+	@OneToMany(targetEntity = Activity.class, cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "user_id", nullable = false)
+	@OrderColumn(name = "order_key")
+	private List<Activity> activity = new ArrayList<>();
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -282,3 +282,9 @@ ALTER TABLE hashtag DROP FOREIGN KEY del_hashtag_on_item;
 ALTER TABLE hashtag CHANGE itemId streamable_id bigint(20) NOT NULL;
 ALTER TABLE hashtag ADD CONSTRAINT hashtag_streamable_fk FOREIGN KEY (streamable_id) REFERENCES streamable (id);
 alter table hashtag add order_key int(11) not null;
+
+--changeset georgi:v100cs50
+alter table activity change type activity_type varchar(50) NOT NULL;
+
+--changeset georgi:v100cs51
+alter table activity add order_key int(11) not null;

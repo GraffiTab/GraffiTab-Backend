@@ -65,12 +65,9 @@ public class UserApiController extends BaseApiController {
 
 	@RequestMapping(value = {"/externalproviders"}, method = RequestMethod.POST, consumes={"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
-	@Transactional
-	public GetUserResult createExternalUser(@RequestBody ExternalUserDto externalUserDto) {
-		GetUserResult createExternalUserResult = new GetUserResult();
-		User user = userService.createExternalUser(mapper.map(externalUserDto.getUser(), User.class), externalUserDto.getExternalId(), externalUserDto.getAccessToken(), externalUserDto.getExternalProviderType());
-		createExternalUserResult.setUser(mapper.map(user, UserDto.class));
-		return createExternalUserResult;
+	public ActionCompletedResult createExternalUser(@RequestBody ExternalUserDto externalUserDto) {
+		userService.createExternalUser(mapper.map(externalUserDto.getUser(), User.class), externalUserDto.getExternalId(), externalUserDto.getAccessToken(), externalUserDto.getExternalProviderType());
+		return new ActionCompletedResult();
 	}
 
 	@RequestMapping(value = {""}, method = RequestMethod.POST, consumes={"application/json"})
@@ -85,7 +82,6 @@ public class UserApiController extends BaseApiController {
 	}
 
 	@RequestMapping(value = "/activate/{token}", method = RequestMethod.GET)
-	@Transactional
 	public ActionCompletedResult activateAccount(@PathVariable("token") String token) {
 		ActionCompletedResult activateUserResult = new ActionCompletedResult();
 		userService.activateUser(token);
@@ -119,7 +115,6 @@ public class UserApiController extends BaseApiController {
 	}
 
 	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.POST)
-	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult follow(@PathVariable("id") Long userId) {
 		GetFullUserResult userProfileResult = new GetFullUserResult();

@@ -1,9 +1,10 @@
 package com.graffitab.server.service.notification;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javax.annotation.Resource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +23,14 @@ import com.graffitab.server.persistence.model.notification.NotificationWelcome;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.PagingService;
+import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.user.UserService;
 
+import lombok.extern.log4j.Log4j;
+
+@Log4j
 @Service
 public class NotificationService {
-
-	private static final Logger log = LogManager.getLogger();
 
 	@Resource
 	private UserService userService;
@@ -43,6 +46,11 @@ public class NotificationService {
 
 	@Resource
 	private OrikaMapper mapper;
+
+	@Resource
+	private TransactionUtils transactionUtils;
+
+	private ExecutorService executor = Executors.newFixedThreadPool(2);
 
 	@Transactional
 	public ListItemsResult<NotificationDto> getNotificationsResult(Integer offset, Integer count) {
@@ -64,52 +72,49 @@ public class NotificationService {
 		return (Long) query.uniqueResult();
 	}
 
-	@Transactional
-	public void addWelcomeNotification(User user) {
+	public void addWelcomeNotificationAsync(User user) {
 		Notification notification = new NotificationWelcome();
-		user.getNotifications().add(notification);
-
-		sendNotificationAsync(user, notification);
+		addNotificationToUser(user, notification);
 	}
 
-	@Transactional
-	public void addFollowNotification(User user, User follower) {
+	public void addFollowNotificationAsync(User user, User follower) {
 		Notification notification = new NotificationFollow(follower);
-		user.getNotifications().add(notification);
-
-		sendNotificationAsync(user, notification);
+		addNotificationToUser(user, notification);
 	}
 
-	@Transactional
-	public void addLikeNotification(User user, User liker, Streamable likedStreamable) {
+	public void addLikeNotificationAsync(User user, User liker, Streamable likedStreamable) {
 		Notification notification = new NotificationLike(liker, likedStreamable);
-		user.getNotifications().add(notification);
-
-		sendNotificationAsync(user, notification);
+		addNotificationToUser(user, notification);
 	}
 
-	@Transactional
-	public void addCommentNotification(User user, User commenter, Streamable commentedStreamable, Comment comment) {
+	public void addCommentNotificationAsync(User user, User commenter, Streamable commentedStreamable, Comment comment) {
 		Notification notification = new NotificationComment(commenter, commentedStreamable, comment);
-		userService.merge(user);
-		user.getNotifications().add(notification);
-		sendNotificationAsync(user, notification);
+		addNotificationToUser(user, notification);
 	}
 
-	@Transactional
-	public void addMentionNotification(User user, User mentioner, Streamable mentionedStreamable) {
+	public void addMentionNotificationAsync(User user, User mentioner, Streamable mentionedStreamable) {
 		Notification notification = new NotificationMention(mentioner, mentionedStreamable);
-		user.getNotifications().add(notification);
-
-		sendNotificationAsync(user, notification);
+		addNotificationToUser(user, notification);
 	}
 
-	private void sendNotificationAsync(User receiver, Notification notification) {
-		log.debug("About to send push notification to user " + receiver.getUsername());
-		try {
-			notificationSenderService.sendNotification(receiver, notification);
-		} catch (Throwable t) {
-			log.error("Error sending push notification", t);
-		}
+	private void addNotificationToUser(User receiver, Notification notification) {
+		executor.execute(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("About to add notification " + notification + " to user " + receiver);
+			}
+
+			// Add notification to receiver.
+			transactionUtils.executeInTransaction(() -> {
+				User inner = userService.findUserById(receiver.getId());
+				inner.getNotifications().add(notification);
+			});
+
+//			// Send push notification to receiver.
+//			notificationSenderService.sendNotification(receiver, notification);
+
+			if (log.isDebugEnabled()) {
+				log.debug("Finished adding notification");
+			}
+		});
 	}
 }
