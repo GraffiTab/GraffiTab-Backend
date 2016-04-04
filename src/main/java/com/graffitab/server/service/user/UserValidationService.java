@@ -18,13 +18,19 @@ public class UserValidationService {
 	public Boolean validateUser(User user) {
 
 		boolean validationResult = false;
-
+		
 		if ( StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getEmail()) ||
 			 StringUtils.isEmpty(user.getFirstName()) || StringUtils.isEmpty(user.getLastName()) ||
 			 StringUtils.isEmpty(user.getPassword())) {
 
 			validationResult = false;
 
+		} else if (!user.getUsername().matches("[A-Za-z0-9-_]+") ||
+				    user.getUsername().length() <= 4 ||
+				    user.getUsername().length() > 25){
+			
+			validationResult = false;
+			
 		} else {
 
 			if (isUsernameTaken(user.getUsername(), user.getId()) || isEmailTaken(user.getEmail(), user.getId()) ){
