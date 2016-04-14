@@ -26,8 +26,12 @@ public class UserValidationService {
 			validationResult = false;
 
 		} else if (!user.getUsername().matches("[A-Za-z0-9-_]+") ||
-				    user.getUsername().length() <= 4 ||
+				    user.getUsername().length() <= 3 ||
 				    user.getUsername().length() > 25){
+			
+			validationResult = false;
+			
+		} else if(!user.getEmail().matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")){
 			
 			validationResult = false;
 			
