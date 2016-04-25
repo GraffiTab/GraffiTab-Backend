@@ -21,6 +21,7 @@ public class UserValidationService {
 
 		boolean validationResult = false;
 		String errorText = "";
+		ResultCode resultCode = ResultCode.BAD_REQUEST;
 		
 		if ( StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getEmail()) ||
 			 StringUtils.isEmpty(user.getFirstName()) || StringUtils.isEmpty(user.getLastName()) ||
@@ -28,6 +29,7 @@ public class UserValidationService {
 
 			validationResult = false;
 			errorText = "Empty mandatory field." ;
+			resultCode = ResultCode.EMPTY_MANDATORY_FIELD;
 			
 		} else if (!user.getUsername().matches("[A-Za-z0-9-_]+") ||
 				    user.getUsername().length() < 3 ||
@@ -35,11 +37,13 @@ public class UserValidationService {
 			
 			validationResult = false;
 			errorText = "Invalid username";
+			resultCode = ResultCode.INVALID_USERNAME;
 			
 		} else if(!user.getEmail().matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")){
 			
 			validationResult = false;
 			errorText = "Invalid email";
+			resultCode = ResultCode.INVALID_EMAIL;
 			
 		} else {
 
@@ -47,11 +51,13 @@ public class UserValidationService {
 				
 				validationResult = false;
 				errorText="Username already in use.";
+				resultCode = ResultCode.USERNAME_ALREADY_IN_USE;
 				
 			} else if(isEmailTaken(user.getEmail(), user.getId())){
 				
 				validationResult = false;
 				errorText="Email already in use.";
+				resultCode = ResultCode.EMAIL_ALREADY_IN_USE;
 				
 			} else { 
 				
@@ -62,7 +68,7 @@ public class UserValidationService {
 		
 		if (!validationResult) {
 			
-			throw new RestApiException(ResultCode.BAD_REQUEST, errorText);
+			throw new RestApiException(resultCode, errorText);
 			
 		}
 		
