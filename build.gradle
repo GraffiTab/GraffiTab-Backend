@@ -253,6 +253,8 @@ def loadConfiguration() {
         configFile = 'conf/application-heroku.properties'
     } else if (env == 'openshiftDev') {
         configFile = 'conf/application-openshift.properties'
+    } else if (env == 'digitalOceanDev') {
+        configFile = 'conf/application-digitalocean.properties'
     }
 
     // load properties
@@ -301,6 +303,17 @@ def loadConfiguration() {
 
     if  (env == 'openshiftDev') {
         println("Reading config for Openshift from environment")
+        // Same as heroku without the DATABASE_URL
+        ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$","").replace("{","").replace("}",""))
+        ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$","").replace("{","").replace("}",""))
+        ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$","").replace("{","").replace("}",""))
+        ext.jdbcUrl = "jdbc:mysql://${dbHost}:${dbPort}/${dbName}?useUnicode=true"
+        ext.dbUser = System.getenv(appProperties.getProperty("db.username")?.replace("\$","").replace("{","").replace("}",""))
+        ext.dbPassword = System.getenv(appProperties.getProperty("db.password")?.replace("\$","").replace("{","").replace("}",""))
+    }
+
+    if  (env == 'digitalOceanDev') {
+        println("Reading config for DigitalOcean from environment")
         // Same as heroku without the DATABASE_URL
         ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$","").replace("{","").replace("}",""))
