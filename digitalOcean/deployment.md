@@ -16,8 +16,8 @@ TODO: Explain how to add keys to digital ocean
 
 - Install Java 8
 - Install NodeJS 6+
-- Upload script `environment.sh`
-- Create deployment dir
+- Upload script `environment.sh` to '~'. Add execution permission
+- Create deployment dir. Copy `environment.sh` into it with execution permission
 
 ### Load balancer
 
