@@ -37,13 +37,25 @@ deployment:
   staging:
     branch: feature/digitalocean
     commands:
-      - echo "Generating JAR to deploy..."
+      - echo "Generating JAR archive to deploy"
       - ./gradlew stage -Penv=digitalOceanDev
-      - echo "Deploying to Digital Ocean - dev01 ..."
-      - scp graffitab.jar $DO_USER@$DO_DROPLET_IP:$DO_DEPLOYMENT_DIR
-      - scp digitalOcean/start.sh $DO_USER@$DO_DROPLET_IP:$DO_DEPLOYMENT_DIR
-      - scp digitalOcean/stop.sh $DO_USER@$DO_DROPLET_IP:$DO_DEPLOYMENT_DIR
-      - echo "Stopping application..."
-      - ssh $DO_USER@$DO_DROPLET_IP 'source ~/environment.sh && bash $DO_DEPLOYMENT_DIR/stop.sh' 2>&1
-      - ssh $DO_USER@$DO_DROPLET_IP 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/start.sh' 2>&1
-      - ssh $DO_USER@$DO_DROPLET_IP 'source ~/environment.sh && nohup $DO_DEPLOYMENT_DIR/start.sh > start.log &' 2>&1
+      - echo "==== Deploying to Digital Ocean - dev01 ===="
+      - scp graffitab.jar $DO_USER@$DO_DEV01_DOMAIN:$DO_DEPLOYMENT_DIR
+      - scp digitalOcean/start.sh $DO_USER@$DO_DEV01_DOMAIN:$DO_DEPLOYMENT_DIR
+      - scp digitalOcean/stop.sh $DO_USER@$DO_DEV01_DOMAIN:$DO_DEPLOYMENT_DIR
+      - echo "==== Stopping application - dev01 ===="
+      - ssh $DO_USER@$DO_DEV01_DOMAIN 'source ~/environment.sh && bash $DO_DEPLOYMENT_DIR/stop.sh' 2>&1
+      - ssh $DO_USER@$DO_DEV01_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/start.sh' 2>&1
+      - echo "==== Starting application in dev01 after deployment ===="
+      - ssh $DO_USER@$DO_DEV01_DOMAIN 'source ~/environment.sh && nohup $DO_DEPLOYMENT_DIR/start.sh > start.log &' 2>&1
+      - echo "==== Deploying to Digital Ocean - dev02 ===="
+      - scp graffitab.jar $DO_USER@$DO_DEV02_DOMAIN:$DO_DEPLOYMENT_DIR
+      - scp digitalOcean/start.sh $DO_USER@$DO_DEV02_DOMAIN:$DO_DEPLOYMENT_DIR
+      - scp digitalOcean/stop.sh $DO_USER@$DO_DEV02_DOMAIN:$DO_DEPLOYMENT_DIR
+      - echo "==== Stopping application - dev02 ===="
+      - ssh $DO_USER@$DO_DEV02_DOMAIN 'source ~/environment.sh && bash $DO_DEPLOYMENT_DIR/stop.sh' 2>&1
+      - ssh $DO_USER@$DO_DEV02_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/start.sh' 2>&1
+      - echo "==== Starting application in dev02 after deployment ===="
+      - ssh $DO_USER@$DO_DEV02_DOMAIN 'source ~/environment.sh && nohup $DO_DEPLOYMENT_DIR/start.sh > start.log &' 2>&1
+
+
