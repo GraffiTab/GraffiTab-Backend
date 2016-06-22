@@ -3,7 +3,8 @@
 PID=$(ps -ef | grep java.*\.jar | grep -v grep | awk '{ print $2 }')
 if [ -z "$PID" ]
 then
-    client_result "Application is already stopped"
+     echo "Application is already stopped"
+     exit 0
 else
     echo "Stopping application with pid $PID"
     kill $PID
