@@ -1,31 +1,20 @@
 package com.graffitab.server.test.api;
 
-import static org.junit.Assert.assertEquals;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
-import javax.annotation.Resource;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.servlet.Filter;
-import javax.transaction.Transactional;
-
+import com.graffitab.server.api.controller.user.MeApiController;
+import com.graffitab.server.config.spring.MainConfig;
+import com.graffitab.server.config.web.WebConfig;
+import com.graffitab.server.persistence.dao.HibernateDaoImpl;
+import com.graffitab.server.persistence.model.asset.Asset;
+import com.graffitab.server.persistence.model.asset.Asset.AssetType;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.model.user.User.AccountStatus;
+import com.graffitab.server.service.TransactionUtils;
+import com.graffitab.server.service.email.Email;
+import com.graffitab.server.service.email.EmailSenderService;
+import com.graffitab.server.service.email.EmailService;
+import com.graffitab.server.service.store.DatastoreService;
+import com.graffitab.server.service.user.UserService;
+import com.graffitab.server.util.GuidGenerator;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
@@ -37,6 +26,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -44,25 +34,32 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
-import com.graffitab.server.api.controller.user.MeApiController;
-import com.graffitab.server.config.spring.MainConfig;
-import com.graffitab.server.config.web.WebConfig;
-import com.graffitab.server.persistence.dao.HibernateDaoImpl;
-import com.graffitab.server.persistence.model.asset.Asset.AssetType;
-import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.persistence.model.user.User.AccountStatus;
-import com.graffitab.server.service.TransactionUtils;
-import com.graffitab.server.service.email.Email;
-import com.graffitab.server.service.email.EmailSenderService;
-import com.graffitab.server.service.email.EmailService;
-import com.graffitab.server.service.store.DatastoreService;
-import com.graffitab.server.service.user.UserService;
-import com.graffitab.server.util.GuidGenerator;
+import javax.annotation.Resource;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.servlet.Filter;
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebAppConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -186,23 +183,27 @@ public class UserApiTest {
 	    	//TODO: Complete test when possible to query following and followers
 	    }
 
-	    //@Test
+	    @Test
 	    @Transactional
 	    @Rollback(value = true)
-	    public void addAssetTest() throws IOException, Exception {
+	    public void addAvatarAssetTest() throws Exception {
 	    	User loggedInUser = createUser();
 	    	InputStream in = this.getClass().getResourceAsStream("/api/test-asset.jpg");
-	    	mockMvc.perform(put("/api/users/me/avatar")
+			MockMultipartFile assetFile = new MockMultipartFile("file", "test-asset.jpg", "image/jpeg", in);
+			HashMap<String, String> contentTypeParams = new HashMap<>();
+			contentTypeParams.put("boundary", "265001916915724");
+			MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
+			mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/avatar")
+					.file(assetFile)
 	    			.with(user(loggedInUser))
-	                .contentType("image/jpeg")
-	                .content(IOUtils.toByteArray(in)))
+					.contentType(mediaType))
 	                .andExpect(status().is(200))
 	                .andExpect(content().contentType("application/json;charset=UTF-8"))
 	                .andExpect(jsonPath("$.asset.guid").isNotEmpty())
 	                .andExpect(jsonPath("$.asset.type").value(AssetType.IMAGE.name()))
-	                .andExpect(jsonPath("$.asset.link").isNotEmpty());
+					.andExpect(jsonPath("$.asset.state").value(Asset.AssetState.PROCESSING.name()));
 	    }
-
+	
 	    private User fillTestUser() {
 	    	User testUser = new User();
 	    	testUser.setFirstName("John");

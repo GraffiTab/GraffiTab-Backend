@@ -1,11 +1,32 @@
 package com.graffitab.server.service.user;
 
-import java.io.InputStream;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
+import com.graffitab.server.api.dto.ListItemsResult;
+import com.graffitab.server.api.dto.user.FullUserDto;
+import com.graffitab.server.api.dto.user.UserDto;
+import com.graffitab.server.api.dto.user.UserSocialFriendsContainerDto;
+import com.graffitab.server.api.errors.*;
+import com.graffitab.server.persistence.dao.HibernateDaoImpl;
+import com.graffitab.server.persistence.model.asset.Asset;
+import com.graffitab.server.persistence.model.asset.Asset.AssetType;
+import com.graffitab.server.persistence.model.externalprovider.ExternalProvider;
+import com.graffitab.server.persistence.model.externalprovider.ExternalProviderType;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.model.user.User.AccountStatus;
+import com.graffitab.server.persistence.model.user.UserSocialFriendsContainer;
+import com.graffitab.server.service.ActivityService;
+import com.graffitab.server.service.asset.AssetService;
+import com.graffitab.server.service.ProxyUtilities;
+import com.graffitab.server.service.TransactionUtils;
+import com.graffitab.server.service.asset.TransferableStream;
+import com.graffitab.server.service.email.EmailService;
+import com.graffitab.server.service.image.ImageUtilsService;
+import com.graffitab.server.service.notification.NotificationService;
+import com.graffitab.server.service.paging.PagingService;
+import com.graffitab.server.service.social.SocialNetworksService;
+import com.graffitab.server.service.store.DatastoreService;
+import com.graffitab.server.util.GuidGenerator;
+import com.graffitab.server.util.PasswordGenerator;
+import lombok.extern.log4j.Log4j2;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -19,38 +40,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.graffitab.server.api.dto.ListItemsResult;
-import com.graffitab.server.api.dto.user.FullUserDto;
-import com.graffitab.server.api.dto.user.UserDto;
-import com.graffitab.server.api.dto.user.UserSocialFriendsContainerDto;
-import com.graffitab.server.api.errors.EntityNotFoundException;
-import com.graffitab.server.api.errors.RestApiException;
-import com.graffitab.server.api.errors.ResultCode;
-import com.graffitab.server.api.errors.UserNotLoggedInException;
-import com.graffitab.server.api.errors.ValidationErrorException;
-import com.graffitab.server.api.mapper.OrikaMapper;
-import com.graffitab.server.persistence.dao.HibernateDaoImpl;
-import com.graffitab.server.persistence.model.asset.Asset;
-import com.graffitab.server.persistence.model.asset.Asset.AssetType;
-import com.graffitab.server.persistence.model.externalprovider.ExternalProvider;
-import com.graffitab.server.persistence.model.externalprovider.ExternalProviderType;
-import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.persistence.model.user.User.AccountStatus;
-import com.graffitab.server.persistence.model.user.UserSocialFriendsContainer;
-import com.graffitab.server.service.ActivityService;
-import com.graffitab.server.service.ProxyUtilities;
-import com.graffitab.server.service.TransactionUtils;
-import com.graffitab.server.service.email.EmailService;
-import com.graffitab.server.service.image.ImageSizes;
-import com.graffitab.server.service.image.ImageUtilsService;
-import com.graffitab.server.service.notification.NotificationService;
-import com.graffitab.server.service.paging.PagingService;
-import com.graffitab.server.service.social.SocialNetworksService;
-import com.graffitab.server.service.store.DatastoreService;
-import com.graffitab.server.util.GuidGenerator;
-import com.graffitab.server.util.PasswordGenerator;
-
-import lombok.extern.log4j.Log4j2;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * Created by david
@@ -61,9 +53,6 @@ public class UserService {
 
 	@Resource
 	private HibernateDaoImpl<User, Long> userDao;
-
-	@Resource
-	private HibernateDaoImpl<Asset, Long> assetDao;
 
 	@Resource
 	private UserSessionService userSessionService;
@@ -87,9 +76,6 @@ public class UserService {
 	private NotificationService notificationService;
 
 	@Resource
-	private OrikaMapper mapper;
-
-	@Resource
 	private HttpServletRequest request;
 
 	@Resource
@@ -102,7 +88,7 @@ public class UserService {
 	private SocialNetworksService socialNetworksService;
 
 	@Resource
-	private ImageUtilsService imageUtilsService;
+	private AssetService assetService;
 
 	@Resource
 	private ExternalProviderService externalProviderService;
@@ -119,14 +105,7 @@ public class UserService {
 
 	private static ThreadLocal<User> threadLocalUserCache = new ThreadLocal<>();
 
-	@Transactional
-	public List<Long> getUserFollowersIds(User user) {
-		Query query = userDao.createNamedQuery("User.getFollowerIds");
-		query.setParameter("currentUser", user);
-		@SuppressWarnings("unchecked")
-		List<Long> ids = (List<Long>) query.list();
-		return ids;
-	}
+	private enum UserImageAsset { COVER, AVATAR };
 
 	@Transactional(readOnly = true)
 	public User getUser(Long id) {
@@ -191,7 +170,6 @@ public class UserService {
 		}
 
 		// The user is effectively authenticated using ExternalProviderAuthenticationFilter
-
 		return user;
 	}
 
@@ -309,7 +287,6 @@ public class UserService {
 
 		if (validationService.validateEditInfo(user.getId(), firstname, lastname, email, website, about)) {
 			User currentUser = getCurrentUser();
-
 			currentUser.setUpdatedOn(new DateTime());
 			currentUser.setFirstName(firstname);
 			currentUser.setLastName(lastname);
@@ -317,9 +294,7 @@ public class UserService {
 			currentUser.setAbout(about);
 			currentUser.setWebsite(website);
 			merge(currentUser);
-
 			return currentUser;
-
 		} else {
 			throw new ValidationErrorException("Validation error updating user");
 		}
@@ -339,37 +314,8 @@ public class UserService {
 		return pagingService.getPagedItems(User.class, UserDto.class, offset, limit, query);
 	}
 
-	public Asset editAvatar(InputStream assetInputStream, long contentLength) {
-		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
-		User user = getCurrentUser();
-
-		String currentAvatarAssetGuid = null;
-
-		if (user.getAvatarAsset() != null) {
-			currentAvatarAssetGuid = user.getAvatarAsset().getGuid();
-		}
-
-		ImageSizes imageSizes = imageUtilsService.generateAndUploadImagesForAsset(assetInputStream, assetToAdd.getGuid());
-		assetToAdd.setWidth(imageSizes.getWidth());
-		assetToAdd.setHeight(imageSizes.getHeight());
-		assetToAdd.setThumbnailWidth(imageSizes.getThumbnailWidth());
-		assetToAdd.setThumbnailHeight(imageSizes.getThumbnailHeight());
-
-		transactionUtils.executeInTransaction(() -> {
-			// Need to reassign, as 'user' is final in this lambda
-			// and we cannot change it
-			User storedUser = user;
-			storedUser.setAvatarAsset(assetToAdd);
-			storedUser.setUpdatedOn(new DateTime());
-			merge(storedUser);
-		});
-
-		if (currentAvatarAssetGuid != null) {
-			datastoreService.deleteAsset(currentAvatarAssetGuid);
-			datastoreService.deleteAsset(currentAvatarAssetGuid + ImageUtilsService.ASSET_THUMBNAIL_SUFFIX);
-		}
-
-		return assetToAdd;
+	public Asset addOrEditAvatar(TransferableStream transferable, long contentLength) {
+		return addOrReplaceUserImageAsset(transferable, contentLength, UserImageAsset.AVATAR);
 	}
 
 	public void deleteAvatar() {
@@ -390,41 +336,48 @@ public class UserService {
 				merge(storedUser);
 			});
 
+			//TODO: in the background?
 			datastoreService.deleteAsset(avatarAsset);
 			datastoreService.deleteAsset(avatarAsset + ImageUtilsService.ASSET_THUMBNAIL_SUFFIX);
 		}
 	}
 
-	public Asset editCover(InputStream assetInputStream, long contentLength) {
+	public Asset addOrEditCover(TransferableStream transferable, long contentLength) {
+		return addOrReplaceUserImageAsset(transferable, contentLength, UserImageAsset.COVER);
+	}
+
+	public Asset addOrReplaceUserImageAsset(TransferableStream transferable, Long contentLength, UserImageAsset userImageAsset) {
 		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
+		String assetGuid = assetService.transferAssetFile(transferable, contentLength);
+		assetToAdd.setGuid(assetGuid);
+
 		User user = getCurrentUser();
 
-		String currentCoverAssetGuid = null;
-
-		if (user.getCoverAsset() != null) {
-			currentCoverAssetGuid = user.getCoverAsset().getGuid();
-		}
-
-		ImageSizes imageSizes = imageUtilsService.generateAndUploadImagesForAsset(assetInputStream, assetToAdd.getGuid());
-
-		assetToAdd.setWidth(imageSizes.getWidth());
-		assetToAdd.setHeight(imageSizes.getHeight());
-		assetToAdd.setThumbnailWidth(imageSizes.getThumbnailWidth());
-		assetToAdd.setThumbnailHeight(imageSizes.getThumbnailHeight());
-
+		// Create asset in PROCESSING state in DB
 		transactionUtils.executeInTransaction(() -> {
 			// Need to reassign, as 'user' is final in this lambda
-		    // and we cannot change it
+			// and we cannot change it
 			User storedUser = user;
-			storedUser.setCoverAsset(assetToAdd);
+			switch(userImageAsset) {
+				case AVATAR:
+					if (user.getAvatarAsset() != null) {
+						assetService.addPreviousAssetGuidMapping(assetGuid, user.getAvatarAsset().getGuid());
+					}
+					storedUser.setAvatarAsset(assetToAdd);
+					break;
+				case COVER:
+					if (user.getCoverAsset() != null) {
+						assetService.addPreviousAssetGuidMapping(assetGuid, user.getCoverAsset().getGuid());
+					}
+					storedUser.setCoverAsset(assetToAdd);
+					break;
+				default:
+					log.warn("Image user asset type not recognized -- fix code!" + userImageAsset.name());
+
+			}
 			storedUser.setUpdatedOn(new DateTime());
 			merge(storedUser);
 		});
-
-		if (currentCoverAssetGuid != null) {
-			datastoreService.deleteAsset(currentCoverAssetGuid);
-			datastoreService.deleteAsset(currentCoverAssetGuid + ImageUtilsService.ASSET_THUMBNAIL_SUFFIX);
-		}
 
 		return assetToAdd;
 	}

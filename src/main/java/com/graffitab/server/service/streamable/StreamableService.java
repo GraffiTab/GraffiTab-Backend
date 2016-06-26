@@ -1,16 +1,5 @@
 package com.graffitab.server.service.streamable;
 
-import java.io.InputStream;
-
-import javax.annotation.Resource;
-
-import org.hibernate.Query;
-import org.javatuples.Pair;
-import org.javatuples.Triplet;
-import org.joda.time.DateTime;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.graffitab.server.api.dto.ListItemsResult;
 import com.graffitab.server.api.dto.streamable.FullStreamableDto;
 import com.graffitab.server.api.dto.streamable.StreamableGraffitiDto;
@@ -26,13 +15,20 @@ import com.graffitab.server.persistence.model.streamable.StreamableGraffiti;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.ActivityService;
 import com.graffitab.server.service.TransactionUtils;
+import com.graffitab.server.service.asset.AssetService;
+import com.graffitab.server.service.asset.TransferableStream;
 import com.graffitab.server.service.email.EmailService;
-import com.graffitab.server.service.image.ImageSizes;
-import com.graffitab.server.service.image.ImageUtilsService;
 import com.graffitab.server.service.notification.NotificationService;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
+import org.hibernate.Query;
+import org.javatuples.Pair;
+import org.joda.time.DateTime;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 @Service
 public class StreamableService {
@@ -65,7 +61,7 @@ public class StreamableService {
 	private HibernateDaoImpl<User, Long> userDao;
 
 	@Resource
-	private ImageUtilsService imageUtilsService;
+	private AssetService assetService;
 
 	@Transactional(readOnly = true)
 	public Streamable getStreamable(Long id) {
@@ -78,14 +74,8 @@ public class StreamableService {
 		return streamable;
 	}
 
-	public Streamable createStreamableGraffiti(StreamableGraffitiDto streamableGraffitiDto, InputStream assetInputStream, long contentLength) {
-		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
-
-		ImageSizes imageSizes = imageUtilsService.generateAndUploadImagesForAsset(assetInputStream, assetToAdd.getGuid());
-		assetToAdd.setWidth(imageSizes.getWidth());
-		assetToAdd.setHeight(imageSizes.getHeight());
-		assetToAdd.setThumbnailWidth(imageSizes.getThumbnailWidth());
-		assetToAdd.setThumbnailHeight(imageSizes.getThumbnailHeight());
+	public Streamable createStreamableGraffiti(StreamableGraffitiDto streamableGraffitiDto, TransferableStream transferable, long contentLength) {
+		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
 
 		Streamable streamable = transactionUtils.executeInTransactionWithResult(() -> {
 			User currentUser = userService.findUserById(userService.getCurrentUser().getId());
@@ -106,17 +96,17 @@ public class StreamableService {
 		return streamable;
 	}
 
-	public Streamable editStreamableGraffiti(Long streamableId, StreamableGraffitiDto streamableGraffitiDto, InputStream assetInputStream, long contentLength) {
-		Triplet<Streamable, Asset, String> resultTripet = transactionUtils.executeInTransactionWithResult(() -> {
-			Streamable streamable = findStreamableById(streamableId);
+	public Streamable editStreamableGraffiti(Long streamableId, StreamableGraffitiDto streamableGraffitiDto,
+											 TransferableStream transferable, long contentLength) {
 
+		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
+
+		Pair<Streamable, String> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
+			Streamable streamable = findStreamableById(streamableId);
 			if (streamable != null) {
 				User currentUser = userService.getCurrentUser();
-
 				if (streamable.getUser().equals(currentUser)) {
-					Asset assetToAdd = Asset.asset(AssetType.IMAGE);
-					String currentStreamableAssetGuid = streamable.getAsset().getGuid();
-
+					String previousStreamableAssetGuid = streamable.getAsset().getGuid();
 					StreamableGraffiti streamableGraffiti = (StreamableGraffiti) streamable;
 					streamableGraffiti.setAsset(assetToAdd);
 					streamableGraffiti.setLatitude(streamableGraffitiDto.getLatitude());
@@ -125,38 +115,32 @@ public class StreamableService {
 					streamableGraffiti.setYaw(streamableGraffitiDto.getYaw());
 					streamableGraffiti.setPitch(streamableGraffitiDto.getPitch());
 					streamableGraffiti.setUpdatedOn(new DateTime());
-
-					return new Triplet<Streamable, Asset, String>(streamable, assetToAdd, currentStreamableAssetGuid);
+					return new Pair<>(streamable, previousStreamableAssetGuid);
 				}
 				else {
-					throw new RestApiException(ResultCode.USER_NOT_OWNER, "The streamable with id " + streamableId + " cannot be changed by user with id " + currentUser.getId());
+					throw new RestApiException(ResultCode.USER_NOT_OWNER, "The streamable with id " + streamableId +
+							" cannot be changed by user with id " + currentUser.getId());
 				}
-			}
-			else {
-				throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId + " not found");
+			} else {
+				throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId +
+											" not found");
 			}
 		});
 
-		Streamable streamable = resultTripet.getValue0();
-		Asset asset = resultTripet.getValue1();
-		String currentStreamableAssetGuid = resultTripet.getValue2();
+		Streamable streamable = resultPair.getValue0();
+		String previousStreamableAssetGuid = resultPair.getValue1();
 
-		ImageSizes imageSizes = imageUtilsService.generateAndUploadImagesForAsset(assetInputStream, asset.getGuid());
-
-		transactionUtils.executeInTransaction(() -> {
-			Asset streamableAsset = streamable.getAsset();
-			streamableAsset.setWidth(imageSizes.getWidth());
-			streamableAsset.setHeight(imageSizes.getHeight());
-			streamableAsset.setThumbnailWidth(imageSizes.getThumbnailWidth());
-			streamableAsset.setThumbnailHeight(imageSizes.getThumbnailHeight());
-			streamableDao.merge(streamable);
-		});
-
-		// delete current
-		datastoreService.deleteAsset(currentStreamableAssetGuid);
-		datastoreService.deleteAsset(currentStreamableAssetGuid + ImageUtilsService.ASSET_THUMBNAIL_SUFFIX);
-
+		if (previousStreamableAssetGuid != null) {
+			assetService.addPreviousAssetGuidMapping(assetToAdd.getGuid(), previousStreamableAssetGuid);
+		}
 		return streamable;
+	}
+
+	private Asset addStreamableAsset(TransferableStream transferable, long contentLength) {
+		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
+		String assetGuid = assetService.transferAssetFile(transferable, contentLength);
+		assetToAdd.setGuid(assetGuid);
+		return assetToAdd;
 	}
 
 	@Transactional

@@ -1,6 +1,6 @@
 package com.graffitab.server.service.social;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.graffitab.server.service.asset.InputStreamTransferableStream;
+import com.graffitab.server.service.asset.TransferableStream;
 import org.springframework.stereotype.Service;
 
 import com.graffitab.server.api.dto.ListItemsResult;
@@ -104,7 +106,8 @@ public class SocialNetworksService {
 
 	private Asset setAvatarFromExternalProvider(URL profilePictureUrl) throws IOException {
 		int fileSize = getFileSize(profilePictureUrl);
-		return userService.editAvatar(profilePictureUrl.openStream(), fileSize);
+		TransferableStream transferableStream = new InputStreamTransferableStream(profilePictureUrl.openStream());
+		return userService.addOrEditAvatar(transferableStream, fileSize);
 	}
 
 	private int getFileSize(URL url) {

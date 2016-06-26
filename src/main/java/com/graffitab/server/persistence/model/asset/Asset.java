@@ -15,7 +15,23 @@ import com.graffitab.server.util.GuidGenerator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
 
+@NamedQueries({
+		@NamedQuery(
+				name = "Asset.findInState",
+				query = "select a "
+						+ "from Asset a "
+						+ "where a.state = :state"
+		),
+		@NamedQuery(
+				name = "Asset.findByGuid",
+				query = "select a "
+						+ "from Asset a "
+						+ "where a.guid = :guid"
+		)
+})
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -26,7 +42,11 @@ public class Asset implements Identifiable<Long> {
 	private static final long serialVersionUID = 1L;
 
 	public enum AssetType {
-		IMAGE;
+		IMAGE
+	}
+
+	public enum AssetState {
+		RESIZING, PROCESSING, COMPLETED;
 	}
 
 	@Id
@@ -52,6 +72,11 @@ public class Asset implements Identifiable<Long> {
 	@Column(name = "thumbnail_height")
 	private Integer thumbnailHeight;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "state", nullable = false)
+	private AssetState state;
+
+
 	@Override
 	public Long getId() {
 		return id;
@@ -66,6 +91,7 @@ public class Asset implements Identifiable<Long> {
 		Asset asset = new Asset();
 		asset.setGuid(GuidGenerator.generate());
 		asset.setAssetType(type);
+		asset.setState(AssetState.PROCESSING);
 		return asset;
 	}
 }

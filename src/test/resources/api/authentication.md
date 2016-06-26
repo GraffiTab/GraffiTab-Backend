@@ -56,3 +56,10 @@ curl -i -H "Content-Type: application/json" -X POST -d '{"user":{
 ```
 
 
+## Upload cover
+
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Cache-Control: no-cache" -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/cover?username=david&password=password1"
+
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/streamables/graffiti"
+
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/streamables/graffiti/11"

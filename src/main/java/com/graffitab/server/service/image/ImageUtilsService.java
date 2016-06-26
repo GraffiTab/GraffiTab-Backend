@@ -1,32 +1,19 @@
 package com.graffitab.server.service.image;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.imageio.ImageIO;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
-
 import com.graffitab.server.api.errors.RestApiException;
-import com.graffitab.server.api.errors.ResultCode;
+import com.graffitab.server.service.asset.AssetService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
 import com.mortennobel.imagescaling.MultiStepRescaleOp;
-
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.IOUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 
 @Service
 @Log4j2
@@ -35,8 +22,8 @@ public class ImageUtilsService {
 	@Resource
 	private DatastoreService datastoreService;
 
-	@Value("${filesystem.tempDir:/tmp}")
-	private String FILE_SYSTEM_TEMP_ROOT;
+	@Resource
+	private AssetService assetService;
 
 	private static Integer STANDARD_IMG_WIDTH = 1024;
 	private static Integer STANDARD_IMG_HEIGHT = 768;
@@ -48,19 +35,7 @@ public class ImageUtilsService {
 
 	public static final String ASSET_THUMBNAIL_SUFFIX = "_thumb";
 
-	@PostConstruct
-	public void init() {
-		File file = new File(FILE_SYSTEM_TEMP_ROOT);
-		if (!file.exists()) {
-			file.mkdirs();
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Temporary filesystem root is " + FILE_SYSTEM_TEMP_ROOT);
-		}
-	}
-
-	public ImageSizes generateAndUploadImagesForAsset(InputStream imageInputStream, String assetGuid) {
+	public ImageSizes generateAndUploadImagesForAsset(String assetGuid) {
 
 		File imageTempFile;
 		ScaledImage standardImage;
@@ -70,7 +45,7 @@ public class ImageUtilsService {
 
 		try {
 
-			imageTempFile = transferImageToTemporaryArea(imageInputStream);
+			imageTempFile = assetService.getTemporaryFile(assetGuid);
 
 			standardImage = generateScaledImage(imageTempFile, STANDARD_IMG_WIDTH, STANDARD_IMG_HEIGHT, "");
 			standardImageSize = standardImage.getScaledImage().length();
@@ -85,8 +60,6 @@ public class ImageUtilsService {
 			if (log.isDebugEnabled()) {
 				log.debug("Thumbnail image generated for asset GUID with size {} bytes", thumbnailImageSize);
 			}
-
-			IOUtils.closeQuietly(imageInputStream);
 
 		} catch (Exception e1) {
 			log.error("Error generating images", e1);
@@ -124,42 +97,12 @@ public class ImageUtilsService {
 		}
 	}
 
-	private File getTemporaryFile() {
-		return new File(FILE_SYSTEM_TEMP_ROOT + File.separatorChar + GuidGenerator.generate());
-	}
-
-	private File transferImageToTemporaryArea(InputStream inputStream) {
-		File tempFile = getTemporaryFile();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Transferring file to temporary store {}", tempFile.getAbsolutePath());
-		}
-
-		try {
-
-			BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(tempFile));
-			FileCopyUtils.copy(inputStream, stream);
-			stream.close();
-			if (log.isDebugEnabled()) {
-				log.debug("Transferring file to temporary completed successfully", tempFile.getAbsolutePath());
-			}
-			return tempFile;
-		} catch (FileNotFoundException e) {
-			log.error("File not found: " + tempFile.getAbsolutePath(), e);
-			throw new RestApiException(ResultCode.GENERAL_ERROR, "Cannot transfer to temporary file");
-		} catch (IOException e) {
-			log.error("General error transferring file",e);
-			throw new RestApiException(ResultCode.GENERAL_ERROR, "Cannot transfer to temporary file");
-		}
-	}
-
 	private ScaledImage generateScaledImage(File originalImageTempFile, Integer width, Integer height, String suffix) throws IOException {
 		FileInputStream fis = new FileInputStream(originalImageTempFile);
-		String imageFileName = 	FILE_SYSTEM_TEMP_ROOT + File.separatorChar +
-										GuidGenerator.generate() +
-										( (suffix != null && StringUtils.hasText(suffix)) ? "_" + suffix : "");
-		ScaledImage scaledImage = scaleImage(originalImageTempFile, fis, width, height, imageFileName);
-		return scaledImage;
+		String imageFileName = assetService.getTemporaryFilePath(
+				GuidGenerator.generate() +
+				((suffix != null && StringUtils.hasText(suffix)) ? "_" + suffix : ""));
+		return scaleImage(originalImageTempFile, fis, width, height, imageFileName);
 	}
 
 	private ScaledImage scaleImage(File originalImageTempFile, InputStream sourceImageInputStream, Integer requestedWidth, Integer requestedHeight, String scaledImageTempFileName) throws IOException {
@@ -172,7 +115,7 @@ public class ImageUtilsService {
 		// Calculate scaled height and width preserving the aspect ratio.
 		int sourceHeight = sourceImage.getHeight();
 		int sourceWidth = sourceImage.getWidth();
-		int outputHeight= sourceHeight;
+		int outputHeight = sourceHeight;
 		int outputWidth = sourceWidth;
 
 		double aspectRatio = (double) sourceHeight / (double) sourceWidth;
@@ -198,7 +141,6 @@ public class ImageUtilsService {
 				outputWidth = (int) (outputHeight / aspectRatio + 0.5); // + 0.5 to round.
 			}
 
-			// TODO: is this needed here?
 			if (outputWidth > requestedWidth) {
 				outputWidth = requestedWidth;
 			}
@@ -207,7 +149,7 @@ public class ImageUtilsService {
 				log.debug("Returning image with dimensions w=: " + outputWidth + ", h=" + outputHeight);
 			}
 
-			if (outputWidth > requestedWidth || outputHeight > requestedHeight ) {
+			if (outputWidth > requestedWidth || outputHeight > requestedHeight) {
 				String msg = "Invalid image scaling -- width or height are over the requested values: outputWidth: " + outputWidth + ", "
 						+ "outputHeight: " + outputHeight + ", sourceWidth: " + sourceWidth + ", sourceHeight: " + sourceHeight +
 						", requestedWidth: " + requestedWidth + ", requestedHeight: " + requestedHeight;
@@ -226,8 +168,7 @@ public class ImageUtilsService {
 			}
 
 			ImageIO.write(scaledImage, OUTPUT_IMG_FORMAT, tempFile);
-		}
-		else {
+		} else {
 			// Image does not require scaling so use the original file instead.
 			tempFile = originalImageTempFile;
 		}
