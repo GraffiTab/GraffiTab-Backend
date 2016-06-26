@@ -58,18 +58,13 @@ sourceSets.main.output.classesDir =  file("$webappRootDir/WEB-INF/classes")
 sourceSets.main.output.resourcesDir =  file("$webappRootDir/WEB-INF/classes")
 
 def springVersion = "4.2.3.RELEASE"
-def jspVersion = "2.1"
 def jstlVersion = "1.1.2"
-def servletVersion = "3.0"
 def hibernateVersion = "4.3.5.Final"
 def c3p0Version = "0.9.1.2"
 def tilesVersion = "3.0.0"
 def mysqlVersion = "5.1.27"
 def jacksonVersion = "2.7.3"
-def junitVersion = "4.11"
-def commonsCodecVersion = "1.8"
 def commonsIoVersion = "2.4"
-def cglibVersion = "2.1_3"
 def log4jVersion = "2.1"
 def slf4jVersion = "1.7.7"
 def jUnitVersion = "4.9"
@@ -86,6 +81,7 @@ def javatuplesVersion = "1.2"
 def facebook4jVersion = "2.4.3"
 def imageScalingVersion = "0.8.6"
 def commonsFileuploadVersion = "1.3.1"
+def boneCpVersion = "0.8.0.RELEASE"
 //http://docs.spring.io/spring-security/site/migrate/current/3-to-4/html5/migrate-3-to-4-jc.html
 def springSecurityVersion = "4.0.3.RELEASE"
 
@@ -127,23 +123,23 @@ configurations {
 
 dependencies {
 
-   compile "javax.servlet:jstl:$jstlVersion",
-           "taglibs:standard:$jstlVersion",
-           "c3p0:c3p0:$c3p0Version",
-           "mysql:mysql-connector-java:$mysqlVersion",
-           "org.hibernate:hibernate-core:$hibernateVersion"
+    compile "javax.servlet:jstl:$jstlVersion",
+            "taglibs:standard:$jstlVersion",
+            "c3p0:c3p0:$c3p0Version",
+            "mysql:mysql-connector-java:$mysqlVersion",
+            "org.hibernate:hibernate-core:$hibernateVersion"
 
-   compile ("org.apache.tiles:tiles-core:$tilesVersion") {
-          exclude module: "jcl-over-slf4j"
-   }
+    compile("org.apache.tiles:tiles-core:$tilesVersion") {
+        exclude module: "jcl-over-slf4j"
+    }
 
-   compile "org.apache.tiles:tiles-jsp:$tilesVersion"
+    compile "org.apache.tiles:tiles-jsp:$tilesVersion"
 
-   compile ("org.slf4j:jcl-over-slf4j:$slf4jVersion") {
-       exclude module: "slf4j-api"
-   }
+    compile("org.slf4j:jcl-over-slf4j:$slf4jVersion") {
+        exclude module: "slf4j-api"
+    }
 
-   compile("org.apache.tomcat.embed:tomcat-embed-jasper")
+    compile("org.apache.tomcat.embed:tomcat-embed-jasper")
 
     // Logging
     slf4j.each { artifact ->
@@ -152,59 +148,60 @@ dependencies {
         }
     }
 
-   compile "commons-io:commons-io:$commonsIoVersion"
+    compile "commons-io:commons-io:$commonsIoVersion"
 
-   compile spring, jackson, log4j
+    compile spring, jackson, log4j
 
-   //springSecurity, jackson, log4j
+    //springSecurity, jackson, log4j
 
-   compile "ma.glasnost.orika:orika-core:$orikaVersion"
+    compile "ma.glasnost.orika:orika-core:$orikaVersion"
 
-   compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
+    compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
 
-   compile "com.amazonaws:aws-java-sdk-s3:$awsVersion"
+    compile "com.amazonaws:aws-java-sdk-s3:$awsVersion"
 
-   compile "org.projectlombok:lombok:1.16.6"
+    compile "org.projectlombok:lombok:1.16.6"
 
-   compile "joda-time:joda-time:$jodaTimeVersion"
+    compile "joda-time:joda-time:$jodaTimeVersion"
 
-   compile "org.jadira.usertype:usertype.core:$jadiraVersion"
+    compile "org.jadira.usertype:usertype.core:$jadiraVersion"
 
-   compile "com.devsu:push-sender:$pushSenderVersion"
+    compile "com.devsu:push-sender:$pushSenderVersion"
 
-   compile "org.javatuples:javatuples:$javatuplesVersion"
+    compile "org.javatuples:javatuples:$javatuplesVersion"
 
-   compile "org.facebook4j:facebook4j-core:$facebook4jVersion"
+    compile "org.facebook4j:facebook4j-core:$facebook4jVersion"
 
-   compile "com.mortennobel:java-image-scaling:$imageScalingVersion"
+    compile "com.mortennobel:java-image-scaling:$imageScalingVersion"
 
-   // for OAuth 2.0
-   compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.8.RELEASE'
-   compile 'org.json:json:20151123'
-   compile 'org.apache.commons:commons-dbcp2:2.1.1'
+    // for OAuth 2.0
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.8.RELEASE'
+    compile 'org.json:json:20151123'
+    compile 'org.apache.commons:commons-dbcp2:2.1.1'
 
-   // Spring Boot
-   compile 'org.springframework.boot:spring-boot-starter'
-   compile 'org.springframework.boot:spring-boot-starter-web'
-   compile 'org.springframework.boot:spring-boot-starter-security'
-   compile 'org.springframework.boot:spring-boot-starter-aop'
-   compile "com.sendgrid:sendgrid-java:$sendgridVersion"
-   compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
+    // Spring Boot
+    compile 'org.springframework.boot:spring-boot-starter'
+    compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.boot:spring-boot-starter-security'
+    compile 'org.springframework.boot:spring-boot-starter-aop'
+    compile "com.sendgrid:sendgrid-java:$sendgridVersion"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
+    compile "com.jolbox:bonecp:$boneCpVersion"
 
-   testCompile 'org.springframework.boot:spring-boot-starter-test'
-   testCompile 'org.springframework.security:spring-security-test:4.0.3.RELEASE'
-   testCompile 'org.subethamail:subethasmtp-wiser:1.2'
-   testCompile 'net.kemitix:wiser-assertions:0.3.1'
-   testCompile 'javamail:javamail:1.3.3'
-   testCompile "com.mortennobel:java-image-scaling:$imageScalingVersion"
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.springframework.security:spring-security-test:4.0.3.RELEASE'
+    testCompile 'org.subethamail:subethasmtp-wiser:1.2'
+    testCompile 'net.kemitix:wiser-assertions:0.3.1'
+    testCompile 'javamail:javamail:1.3.3'
+    testCompile "com.mortennobel:java-image-scaling:$imageScalingVersion"
 
-   runtime "mysql:mysql-connector-java:$mysqlVersion"
+    runtime "mysql:mysql-connector-java:$mysqlVersion"
 
-   testCompile "junit:junit:$jUnitVersion"
-   testCompile "org.mockito:mockito-core:$mockitoVersion"
-   testCompile "com.jayway.jsonpath:json-path:$jsonPathVersion"
-   testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
-   testCompile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
+    testCompile "junit:junit:$jUnitVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "com.jayway.jsonpath:json-path:$jsonPathVersion"
+    testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
+    testCompile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
 
 }
 
@@ -223,17 +220,8 @@ liquibase {
     }
   }
 
-  // runList = project.ext.runList
-  // runList = 'main'
   runList = 'main'
 }
-
-//processResources {
-// from('src/main/resources') {
-//        exclude '**/*.p12'
-//        filter(ReplaceTokens, tokens: config)
-//   }
-//}
 
 /**
  This can be passed from the command line like -Penv=value
@@ -285,20 +273,20 @@ def loadConfiguration() {
    }
 
     if (env == 'herokuDev') {
-       // Heroku -- The environment variable DATABASE_URL contains the information
+        // Heroku -- The environment variable DATABASE_URL contains the information
         println("Reading config for Heroku from environment")
-         URI dbUri = new URI(System.getenv("DATABASE_URL"));
-         def username = dbUri.getUserInfo().split(":")[0];
-         def password = dbUri.getUserInfo().split(":")[1];
-         def dbJdbcUrl = "jdbc:mysql://" + dbUri.getHost() + dbUri.getPath();
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+        def username = dbUri.getUserInfo().split(":")[0];
+        def password = dbUri.getUserInfo().split(":")[1];
+        def dbJdbcUrl = "jdbc:mysql://" + dbUri.getHost() + dbUri.getPath();
 
-         ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$",""))
-         ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$",""))
-         ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$",""))
-         ext.jdbcUrl = dbJdbcUrl
-         ext.dbUser = System.getenv(appProperties.getProperty("db.username")?.replace("\$",""))
-         ext.dbPassword = System.getenv(appProperties.getProperty("db.password")?.replace("\$",""))
-         println "Heroku DB Url: " + jdbcUrl
+        ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$", ""))
+        ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$", ""))
+        ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$", ""))
+        ext.jdbcUrl = dbJdbcUrl
+        ext.dbUser = System.getenv(appProperties.getProperty("db.username")?.replace("\$", ""))
+        ext.dbPassword = System.getenv(appProperties.getProperty("db.password")?.replace("\$", ""))
+        println "Heroku DB Url: " + jdbcUrl
     }
 
     if  (env == 'openshiftDev') {
@@ -314,7 +302,7 @@ def loadConfiguration() {
 
     if  (env == 'digitalOceanDev') {
         println("Reading config for DigitalOcean from environment")
-        // Same as heroku without the DATABASE_URL
+
         ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$","").replace("{","").replace("}",""))

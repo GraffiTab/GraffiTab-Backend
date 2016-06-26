@@ -2,6 +2,7 @@ package com.graffitab.server.config.spring;
 
 import java.util.Properties;
 
+import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,18 @@ public class MainDatabaseConfig {
 
 	private Integer dbInitialSize;
 
+	private Integer dbBoneCpPartitionCount;
+
+	private Integer dbBoneCpMinConnectionsPerPartition;
+
+	private Integer dbBoneCpMaxConnectionsPerPartition;
+
+	private Integer dbBoneCpAcquireIncrement;
+
+	private Integer dbBoneCpIdleMaxAgeMinutes;
+
+	private Integer dbBoneCpIdleConnectionTestPeriodInMinutes;
+
 	@PostConstruct
 	public void init() {
 		LOG.info("*** Loading environment properties...");
@@ -63,8 +76,9 @@ public class MainDatabaseConfig {
 		return dataSource;
 	}
 
-	@Bean
-	public BasicDataSource targetDataSource() {
+	//TODO: To be removed after finishing testing with BoneCP
+	//@Bean
+	public BasicDataSource targetDataSourceBasic() {
 
 		LOG.info("*** Database configuration read from application properties: \n" +
 				"**** jbcUrl -> " + jdbcUrl + "\n" +
@@ -81,6 +95,31 @@ public class MainDatabaseConfig {
 		basicDataSource.setMinIdle(dbMinIdle);
 		basicDataSource.setInitialSize(dbInitialSize);
 		return basicDataSource;
+	}
+
+	@Bean
+	public BoneCPDataSource targetDataSource() {
+
+		LOG.info("*** [BoneCP] Database configuration read from application properties: \n" +
+				"**** jbcUrl -> " + jdbcUrl + "\n" +
+				"**** user   -> " + dbUsername + "\n" +
+				"**** dbHost -> " + dbHost + "\n" +
+				"**** dbPort -> " + dbPort);
+		// http://kielczewski.eu/2014/05/database-connection-pooling-with-bonecp-in-spring-boot-application/
+		BoneCPDataSource dataSource = new BoneCPDataSource();
+		dataSource.setDriverClass("com.mysql.jdbc.Driver");
+		dataSource.setJdbcUrl(jdbcUrl);
+		dataSource.setUsername(dbUsername);
+		dataSource.setPassword(dbPassword);
+		dataSource.setIdleConnectionTestPeriodInMinutes(dbBoneCpIdleConnectionTestPeriodInMinutes);
+		dataSource.setIdleMaxAgeInMinutes(dbBoneCpIdleMaxAgeMinutes);
+		dataSource.setMaxConnectionsPerPartition(dbBoneCpMaxConnectionsPerPartition);
+		dataSource.setMinConnectionsPerPartition(dbBoneCpMinConnectionsPerPartition);
+		dataSource.setPartitionCount(dbBoneCpPartitionCount);
+		dataSource.setAcquireIncrement(dbBoneCpAcquireIncrement);
+		dataSource.setStatementsCacheSize(100);
+		return dataSource;
+
 	}
 
 	@Bean
@@ -117,8 +156,18 @@ public class MainDatabaseConfig {
 		this.dbPassword = env.getProperty("db.password","");
 		this.dbHost = env.getProperty("db.host","localhost");
 		this.dbPort = Integer.parseInt(env.getProperty("db.port","3306"));
+
+		// BasicDataSource
 		this.dbMinIdle = Integer.parseInt(env.getProperty("db.minIdle","2"));;
 		this.dbMaxIdle = Integer.parseInt(env.getProperty("db.maxIdle","5"));;
-		this.dbInitialSize = Integer.parseInt(env.getProperty("db.initialSize","5"));;
+		this.dbInitialSize = Integer.parseInt(env.getProperty("db.initialSize","5"));
+
+		// BoneCP
+		this.dbBoneCpPartitionCount = Integer.parseInt(env.getProperty("db.partitionCount","4"));
+		this.dbBoneCpMinConnectionsPerPartition =  Integer.parseInt(env.getProperty("db.minConnectionsPerPartition","5"));
+		this.dbBoneCpMaxConnectionsPerPartition = Integer.parseInt(env.getProperty("db.maxConnectionsPerPartition","15"));
+		this.dbBoneCpAcquireIncrement = Integer.parseInt(env.getProperty("db.acquireIncrement","5"));
+		this.dbBoneCpIdleMaxAgeMinutes = Integer.parseInt(env.getProperty("db.idleMaxAgeMinutes","240"));
+		this.dbBoneCpIdleConnectionTestPeriodInMinutes = Integer.parseInt(env.getProperty("db.idleConnectionTestPeriodMinutes","60"));
 	}
 }
