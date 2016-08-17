@@ -1,16 +1,18 @@
 package com.graffitab.server.service.email;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
 import com.amazonaws.util.IOUtils;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-@Getter @Setter @Log4j2
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
+@Setter
+@Log4j2
 public class Email {
 
 	@Getter
@@ -23,7 +25,7 @@ public class Email {
 
 		private String templateName;
 
-		private EmailType(String templateName) {
+		EmailType(String templateName) {
 			this.templateName = templateName;
 		}
 	}
@@ -48,6 +50,8 @@ public class Email {
 	private static String TO_FEEDBACK_ADDRESS = "info@graffitab.com";
 	private static String TO_SUPPORT_ADDRESS = "support@graffitab.com";
 
+	private static Map<String, String> emailTemplateCache = new HashMap<>();
+
 	static {
 		try {
 			WELCOME_TEMPLATE_CONTENTS = readTemplate(EmailType.ACTIVATION.getTemplateName());
@@ -60,23 +64,25 @@ public class Email {
 		}
 	}
 
-	public static Email welcome(String[] recipients, Map<String, String> placeHolders) {
+	public static Email welcome(String[] recipients, Map<String, String> placeHolders, String subject, String language) {
+		//TODO: Localization support
 		Email email = new Email();
 		EmailType emailType = EmailType.ACTIVATION;
-		email.setSubject("Welcome to GraffiTab");
+		email.setSubject(subject);
 		email.setFromAddress(FROM_ADDRESS);
 		email.setFromName(FROM_NAME);
 		email.setEmailType(emailType);
-		String emailBody = replacePlaceholders(placeHolders, WELCOME_TEMPLATE_CONTENTS);
+		String emailBody = getEmailTemplateContentForLanguage(EmailType.ACTIVATION.getTemplateName(), language);
 		email.setHtmlBody(emailBody);
 		email.setRecipients(recipients);
 		return email;
 	}
 
-	public static Email welcomeExternal(String[] recipients, Map<String, String> placeHolders) {
+	public static Email welcomeExternal(String[] recipients, Map<String, String> placeHolders, String subject) {
 		Email email = new Email();
+		//TODO: Localization support
 		EmailType emailType = EmailType.ACTIVATION_EXTERNAL;
-		email.setSubject("Welcome to GraffiTab");
+		email.setSubject(subject);
 		email.setFromAddress(FROM_ADDRESS);
 		email.setFromName(FROM_NAME);
 		email.setEmailType(emailType);
@@ -86,10 +92,11 @@ public class Email {
 		return email;
 	}
 
-	public static Email resetPassword(String[] recipients, Map<String, String> placeHolders) {
+	public static Email resetPassword(String[] recipients, Map<String, String> placeHolders, String subject) {
+		//TODO: Localization support
 		Email email = new Email();
 		EmailType emailType = EmailType.RESET_PASSWORD;
-		email.setSubject("Reset your password in GraffiTab");
+		email.setSubject(subject);
 		email.setFromAddress(FROM_ADDRESS);
 		email.setFromName(FROM_NAME);
 		email.setEmailType(emailType);
@@ -112,10 +119,10 @@ public class Email {
 		return email;
 	}
 
-	public static Email flag(Map<String, String> placeHolders) {
+	public static Email flag(Map<String, String> placeHolders, String subject) {
 		Email email = new Email();
 		EmailType emailType = EmailType.FLAG;
-		email.setSubject("GraffiTab Flags");
+		email.setSubject(subject);
 		email.setFromAddress(FROM_ADDRESS);
 		email.setFromName(FROM_NAME);
 		email.setEmailType(emailType);
@@ -139,5 +146,23 @@ public class Email {
 		return templateString;
 	}
 
-
+	/**
+	 * Two letter language code
+	 *
+	 * @param language
+     */
+	private synchronized static String getEmailTemplateContentForLanguage(String templateBaseName, String language) {
+		try {
+			String templateName = templateBaseName.replace(".htm", "_" + language + ".htm");
+			String emailContent = emailTemplateCache.get(templateName);
+			if (emailContent == null) {
+				emailContent = readTemplate(templateName);
+				emailTemplateCache.put(language, emailContent);
+			}
+			return emailContent;
+		} catch (IOException ioe) {
+			log.error("Error reading email template for language: " + language, ioe);
+			throw new RuntimeException("Error reading email template for language: " + language);
+		}
+	}
 }

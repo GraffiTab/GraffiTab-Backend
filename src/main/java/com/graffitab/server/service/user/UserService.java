@@ -232,7 +232,7 @@ public class UserService {
 				});
 
 				emailService.sendWelcomeEmail(user.getUsername(), user.getEmail(),
-						generateUserAccountActivationLink(userToken));
+						generateUserAccountActivationLink(userToken), "en");
 
 				return user;
 			} else {
@@ -267,7 +267,7 @@ public class UserService {
 							userDao.persist(user);
 						});
 
-						emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail());
+						emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), "en");
 
 						// Add notification to the new user.
 						notificationService.addWelcomeNotificationAsync(user);
@@ -500,7 +500,7 @@ public class UserService {
 			return innerUser;
 		});
 
-		emailService.sendResetPasswordEmail(email, generateResetPasswordLink(resetPasswordToken));
+		emailService.sendResetPasswordEmail(email, generateResetPasswordLink(resetPasswordToken), "en");
 
 		return user;
 	}

@@ -278,7 +278,7 @@ public class StreamableService {
 		Boolean wasFlagged = resultPair.getValue1();
 
 		if (wasFlagged) {
-			emailService.sendFlagEmail(streamable.getId(), datastoreService.generateDownloadLink(streamable.getAsset().getGuid()));
+			emailService.sendFlagEmail(streamable.getId(), datastoreService.generateDownloadLink(streamable.getAsset().getGuid()), "en");
 		}
 
 		return streamable;
