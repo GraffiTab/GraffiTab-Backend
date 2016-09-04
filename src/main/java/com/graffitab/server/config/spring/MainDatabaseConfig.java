@@ -38,12 +38,6 @@ public class MainDatabaseConfig {
 
 	private Integer dbPort;
 
-	private Integer dbMaxIdle;
-
-	private Integer dbMinIdle;
-
-	private Integer dbInitialSize;
-
 	private Integer dbBoneCpPartitionCount;
 
 	private Integer dbBoneCpMinConnectionsPerPartition;
@@ -74,27 +68,6 @@ public class MainDatabaseConfig {
 		dataSource.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
 		dataSource.setTargetDataSource(targetDataSource());
 		return dataSource;
-	}
-
-	//TODO: To be removed after finishing testing with BoneCP
-	//@Bean
-	public BasicDataSource targetDataSourceBasic() {
-
-		LOG.info("*** Database configuration read from application properties: \n" +
-				"**** jbcUrl -> " + jdbcUrl + "\n" +
-				"**** user   -> " + dbUsername + "\n" +
-				"**** dbHost -> " + dbHost + "\n" +
-				"**** dbPort -> " + dbPort);
-
-		BasicDataSource basicDataSource = new BasicDataSource();
-		basicDataSource.setDriverClassName("com.mysql.jdbc.Driver");
-		basicDataSource.setUrl(jdbcUrl);
-		basicDataSource.setUsername(dbUsername);
-		basicDataSource.setPassword(dbPassword);
-		basicDataSource.setMaxIdle(dbMaxIdle);
-		basicDataSource.setMinIdle(dbMinIdle);
-		basicDataSource.setInitialSize(dbInitialSize);
-		return basicDataSource;
 	}
 
 	@Bean
@@ -156,11 +129,6 @@ public class MainDatabaseConfig {
 		this.dbPassword = env.getProperty("db.password","");
 		this.dbHost = env.getProperty("db.host","localhost");
 		this.dbPort = Integer.parseInt(env.getProperty("db.port","3306"));
-
-		// BasicDataSource
-		this.dbMinIdle = Integer.parseInt(env.getProperty("db.minIdle","2"));;
-		this.dbMaxIdle = Integer.parseInt(env.getProperty("db.maxIdle","5"));;
-		this.dbInitialSize = Integer.parseInt(env.getProperty("db.initialSize","5"));
 
 		// BoneCP
 		this.dbBoneCpPartitionCount = Integer.parseInt(env.getProperty("db.partitionCount","4"));
