@@ -11,6 +11,8 @@ import com.graffitab.server.api.dto.ActionCompletedResult;
 import com.graffitab.server.api.dto.feedback.FeedbackDto;
 import com.graffitab.server.service.FeedbackService;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/api/feedback")
 public class FeedbackController {
@@ -19,8 +21,8 @@ public class FeedbackController {
 	private FeedbackService feedbackService;
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public ActionCompletedResult submitFeedback(@JsonProperty("feedback") FeedbackDto feedbackDto) {
-		feedbackService.sendFeedback(feedbackDto.getName(), feedbackDto.getEmail(), feedbackDto.getText());
+	public ActionCompletedResult submitFeedback(@JsonProperty("feedback") FeedbackDto feedbackDto, Locale locale) {
+		feedbackService.sendFeedback(feedbackDto.getName(), feedbackDto.getEmail(), feedbackDto.getText(), locale);
 		return new ActionCompletedResult();
 	}
 }

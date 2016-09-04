@@ -29,6 +29,8 @@ import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.streamable.StreamableService;
 import com.graffitab.server.service.user.UserService;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserApiController extends BaseApiController {
@@ -87,16 +89,18 @@ public class UserApiController extends BaseApiController {
 
 	@RequestMapping(value = {"/externalproviders"}, method = RequestMethod.POST, consumes={"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
-	public ActionCompletedResult createExternalUser(@RequestBody ExternalUserDto externalUserDto) {
-		userService.createExternalUser(mapper.map(externalUserDto.getUser(), User.class), externalUserDto.getExternalId(), externalUserDto.getAccessToken(), externalUserDto.getExternalProviderType());
+	public ActionCompletedResult createExternalUser(@RequestBody ExternalUserDto externalUserDto, Locale locale) {
+		userService.createExternalUser(mapper.map(externalUserDto.getUser(), User.class),
+				externalUserDto.getExternalId(), externalUserDto.getAccessToken(),
+				externalUserDto.getExternalProviderType(), locale);
 		return new ActionCompletedResult();
 	}
 
 	@RequestMapping(value = {""}, method = RequestMethod.POST, consumes={"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
 	@Transactional
-	public ActionCompletedResult createUser(@JsonProperty("user") UserDto userDto) {
-		userService.createUser(mapper.map(userDto, User.class));
+	public ActionCompletedResult createUser(@JsonProperty("user") UserDto userDto, Locale locale) {
+		userService.createUser(mapper.map(userDto, User.class), locale);
 		return new ActionCompletedResult();
 	}
 
@@ -107,8 +111,8 @@ public class UserApiController extends BaseApiController {
 	}
 
 	@RequestMapping(value = "/resetpassword", method = RequestMethod.POST)
-	public ActionCompletedResult resetPassword(@JsonProperty(value = "email") String email) {
-		userService.resetPassword(email);
+	public ActionCompletedResult resetPassword(@JsonProperty(value = "email") String email, Locale locale) {
+		userService.resetPassword(email, locale);
 		return new ActionCompletedResult();
 	}
 

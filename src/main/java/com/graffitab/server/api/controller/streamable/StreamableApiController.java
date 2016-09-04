@@ -25,6 +25,8 @@ import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.service.streamable.CommentService;
 import com.graffitab.server.service.streamable.StreamableService;
 
+import java.util.Locale;
+
 @RestController
 @RequestMapping("/api/streamables")
 public class StreamableApiController {
@@ -141,9 +143,9 @@ public class StreamableApiController {
 
 	@RequestMapping(value = {"/{id}/flag"}, method = RequestMethod.PUT)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
-	public GetFullStreamableResult flag(@PathVariable("id") Long streamableId) {
+	public GetFullStreamableResult flag(@PathVariable("id") Long streamableId, Locale locale) {
 		GetFullStreamableResult getFullStreamableResult = new GetFullStreamableResult();
-		Streamable streamable = streamableService.flag(streamableId);
+		Streamable streamable = streamableService.flag(streamableId, locale);
 		getFullStreamableResult.setStreamable(mapper.map(streamable, FullStreamableDto.class));
 		return getFullStreamableResult;
 	}

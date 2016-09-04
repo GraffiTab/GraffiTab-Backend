@@ -25,57 +25,53 @@ public class EmailService {
 
 	private ExecutorService emailExecutor = Executors.newFixedThreadPool(2);
 
-	public void sendWelcomeEmail(String username, String email, String activationLink, String language) {
+	public void sendWelcomeEmail(String username, String email, String activationLink, Locale locale) {
 		Map<String,String> data = new HashMap<>();
 		data.put("@username", username);
 		data.put("@activation_link", activationLink);
-		Locale locale = Locale.forLanguageTag(language);
 		String welcomeSubject = messageSource.getMessage("email.subject.welcome", null, locale);
-		Email welcomeEmail = Email.welcome(new String[] {email}, data, welcomeSubject, language);
+		Email welcomeEmail = Email.welcome(new String[] {email}, data, welcomeSubject, locale.getLanguage());
 		sendEmailAsync(welcomeEmail);
 	}
 
-	public void sendWelcomeExternalEmail(String username, String email, String language) {
+	public void sendWelcomeExternalEmail(String username, String email, Locale locale) {
 		Map<String,String> data = new HashMap<>();
 		data.put("@username", username);
 
-		Locale locale = Locale.forLanguageTag(language);
 		String welcomeSubject = messageSource.getMessage("email.subject.welcome", null, locale);
-
-		Email welcomeEmail = Email.welcomeExternal(new String[] {email}, data, welcomeSubject);
+		Email welcomeEmail = Email.welcomeExternal(new String[] {email}, data, welcomeSubject, locale.getLanguage());
 		sendEmailAsync(welcomeEmail);
 	}
 
-	public void sendResetPasswordEmail(String email, String resetPasswordLink, String language) {
+	public void sendResetPasswordEmail(String email, String resetPasswordLink, Locale locale) {
 		Map<String,String> data = new HashMap<>();
 		data.put("@reset_link", resetPasswordLink);
 
-		Locale locale = Locale.forLanguageTag(language);
 		String resetPasswordSubject = messageSource.getMessage("email.subject.resetPassword", null, locale);
-
-		Email resetPasswordEmail = Email.resetPassword(new String[] {email}, data, resetPasswordSubject);
+		Email resetPasswordEmail = Email.resetPassword(new String[] {email}, data, resetPasswordSubject, locale.getLanguage());
 		sendEmailAsync(resetPasswordEmail);
 	}
 
-	public void sendFeedbackEmail(String name, String email, String text) {
+	public void sendFeedbackEmail(String name, String email, String text, Locale locale) {
 		Map<String,String> data = new HashMap<>();
 		data.put("@username", name);
 		data.put("@email", email);
 		data.put("@feedback", text);
 
-		Email feedbackEmail = Email.feedback(data);
+		String feedbackSubject = messageSource.getMessage("email.subject.feedback", null, locale);
+
+		Email feedbackEmail = Email.feedback(data, feedbackSubject, locale.getLanguage());
 		sendEmailAsync(feedbackEmail);
 	}
 
-	public void sendFlagEmail(Long streamableId, String streamableLink, String language) {
+	public void sendFlagEmail(Long streamableId, String streamableLink, Locale locale) {
 		Map<String,String> data = new HashMap<>();
 		data.put("@streamable_id", streamableId + "");
 		data.put("@streamable_link", streamableLink);
 
-		Locale locale = Locale.forLanguageTag(language);
 		String flagSubject = messageSource.getMessage("email.subject.flag", null, locale);
 
-		Email feedbackEmail = Email.flag(data, flagSubject);
+		Email feedbackEmail = Email.flag(data, flagSubject, locale.getLanguage());
 		sendEmailAsync(feedbackEmail);
 	}
 

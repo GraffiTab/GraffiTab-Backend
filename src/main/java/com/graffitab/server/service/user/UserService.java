@@ -1,6 +1,7 @@
 package com.graffitab.server.service.user;
 
 import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -216,7 +217,7 @@ public class UserService {
 		return user;
 	}
 
-	public User createUser(User user) {
+	public User createUser(User user, Locale locale) {
 		if (validationService.validateCreateUser(user)) {
 			if (user.getId() == null) {
 				String userToken = GuidGenerator.generate();
@@ -232,7 +233,7 @@ public class UserService {
 				});
 
 				emailService.sendWelcomeEmail(user.getUsername(), user.getEmail(),
-						generateUserAccountActivationLink(userToken), "en");
+						generateUserAccountActivationLink(userToken), locale);
 
 				return user;
 			} else {
@@ -244,7 +245,7 @@ public class UserService {
 	}
 
 	public User createExternalUser(User user, final String externalUserId, String accessToken,
-			ExternalProviderType externalProviderType) {
+			ExternalProviderType externalProviderType, Locale locale) {
 		// Generate random password for the external user, so that the validation is passed.
 		user.setPassword(passwordEncoder.encode(PasswordGenerator.generatePassword()));
 
@@ -267,7 +268,7 @@ public class UserService {
 							userDao.persist(user);
 						});
 
-						emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), "en");
+						emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), locale);
 
 						// Add notification to the new user.
 						notificationService.addWelcomeNotificationAsync(user);
@@ -484,7 +485,7 @@ public class UserService {
 		}
 	}
 
-	public User resetPassword(String email) {
+	public User resetPassword(String email, Locale locale) {
 		final String resetPasswordToken = GuidGenerator.generate();
 		User user = transactionUtils.executeInTransactionWithResult(() -> {
 			User innerUser = findByEmail(email);
@@ -500,7 +501,7 @@ public class UserService {
 			return innerUser;
 		});
 
-		emailService.sendResetPasswordEmail(email, generateResetPasswordLink(resetPasswordToken), "en");
+		emailService.sendResetPasswordEmail(email, generateResetPasswordLink(resetPasswordToken), locale);
 
 		return user;
 	}

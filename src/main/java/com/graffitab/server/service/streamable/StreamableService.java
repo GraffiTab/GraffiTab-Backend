@@ -31,6 +31,8 @@ import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
 
+import java.util.Locale;
+
 @Service
 public class StreamableService {
 
@@ -256,7 +258,7 @@ public class StreamableService {
 		return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 	}
 
-	public Streamable flag(Long streamableId) {
+	public Streamable flag(Long streamableId, Locale locale) {
 		Pair<Streamable, Boolean> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
 			Streamable innerStreamable = findStreamableById(streamableId);
 
@@ -278,7 +280,7 @@ public class StreamableService {
 		Boolean wasFlagged = resultPair.getValue1();
 
 		if (wasFlagged) {
-			emailService.sendFlagEmail(streamable.getId(), datastoreService.generateDownloadLink(streamable.getAsset().getGuid()), "en");
+			emailService.sendFlagEmail(streamable.getId(), datastoreService.generateDownloadLink(streamable.getAsset().getGuid()), locale);
 		}
 
 		return streamable;
