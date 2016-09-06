@@ -23,9 +23,7 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 @Configuration
 @EnableWebMvc
@@ -99,7 +97,7 @@ public class WebConfig extends WebMvcConfigurationSupport {
 
 	@Bean
 	public LocaleResolver localeResolver() {
-		return new AcceptHeaderLocaleResolver();
+		return new FallbackAcceptHeaderLocaleResolver();
 	}
 
 	@Override
