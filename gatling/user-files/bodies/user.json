@@ -1,0 +1,9 @@
+{
+  "user":{
+    "username": "${username}",
+    "firstName": "${firstName}",
+    "lastName": "${lastName}",
+    "password": "${password}",
+    "email": "${email}"
+  }
+}

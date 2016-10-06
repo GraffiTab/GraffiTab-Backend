@@ -11,6 +11,7 @@ import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.javatuples.Pair;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -100,6 +101,9 @@ public class UserService {
 
 	@Resource
 	private ExternalProviderService externalProviderService;
+
+	@Value("${registration.immediateActivation:false}")
+	private Boolean immediateUserActivation;
 
 	public static final String ACTIVATION_TOKEN_METADATA_KEY = "activationToken";
 	public static final String ACTIVATION_TOKEN_DATE_METADATA_KEY = "activationTokenDate";
@@ -226,7 +230,13 @@ public class UserService {
 					user.setPassword(passwordEncoder.encode(user.getPassword()));
 					user.setGuid(GuidGenerator.generate());
 					user.setCreatedOn(new DateTime());
-					user.setAccountStatus(AccountStatus.PENDING_ACTIVATION);
+
+					if (immediateUserActivation) {
+						user.setAccountStatus(AccountStatus.ACTIVE);
+					} else {
+						user.setAccountStatus(AccountStatus.PENDING_ACTIVATION);
+					}
+
 					user.getMetadataItems().put(ACTIVATION_TOKEN_METADATA_KEY, userToken);
 					user.getMetadataItems().put(ACTIVATION_TOKEN_DATE_METADATA_KEY, System.currentTimeMillis() + "");
 					userDao.persist(user);
