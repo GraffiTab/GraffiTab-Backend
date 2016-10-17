@@ -23,3 +23,28 @@
 > failed                                                 0 (  0%)
 ================================================================================
 ```
+
+## Load App Home
+
+* rampUsers(150) over (30 seconds)
+
+```
+================================================================================
+---- Global Information --------------------------------------------------------
+> request count                                       1050 (OK=1050   KO=0     )
+> min response time                                     31 (OK=31     KO=-     )
+> max response time                                    746 (OK=746    KO=-     )
+> mean response time                                   101 (OK=101    KO=-     )
+> std deviation                                        135 (OK=135    KO=-     )
+> response time 50th percentile                         51 (OK=51     KO=-     )
+> response time 75th percentile                         65 (OK=65     KO=-     )
+> response time 95th percentile                        466 (OK=466    KO=-     )
+> response time 99th percentile                        628 (OK=628    KO=-     )
+> mean requests/sec                                 31.818 (OK=31.818 KO=-     )
+---- Response Time Distribution ------------------------------------------------
+> t < 800 ms                                          1050 (100%)
+> 800 ms < t < 1200 ms                                   0 (  0%)
+> t > 1200 ms                                            0 (  0%)
+> failed                                                 0 (  0%)
+================================================================================
+```

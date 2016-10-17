@@ -8,13 +8,13 @@ import io.gatling.http.Predef._
   */
 object Feed {
 
-  val getFeed = exec(http("Me")
-    .get("/api/users/me")
+  val getFeed = exec(http("Get My Feed")
+    .get("/api/users/me/feed")
     .check(status is 200)
-    .check(jsonPath("$.user.id").ofType[Int].exists))
+    .check(jsonPath("$.items").exists))
 
-  val trending = exec(http("Me")
-    .get("/api/users/me")
+  val trending = exec(http("Trending")
+    .get("/api/streamables/popular")
     .check(status is 200)
-    .check(jsonPath("$.user.id").ofType[Int].exists))
+    .check(jsonPath("$.items").exists))
 }

@@ -22,8 +22,14 @@ class Upload extends Simulation {
     .check(status is 200)
     .check(jsonPath("$.asset.guid").ofType[String].exists))
 
-  val scn = scenario("Upload Avatar into GraffiTab").exec(uploadAvatar)
+  val uploadCover = pause(2)
+    .exec(http("Upload Cover")
+      .post("/api/users/me/cover")
+      .bodyPart(RawFileBodyPart("file","testCover.jpg").contentType("image/jpeg")).asMultipartForm
+      .check(status is 200)
+      .check(jsonPath("$.asset.guid").ofType[String].exists))
+
+  val scn = scenario("Upload Avatar into GraffiTab").exec(uploadAvatar, uploadCover)
 
   setUp(scn.inject(rampUsers(150) over (30 seconds)).protocols(TestConfig.httpConf))
-
 }
