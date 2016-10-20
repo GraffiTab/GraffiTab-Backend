@@ -112,6 +112,20 @@ sudo swapon /swapfile
 sudo swapon -s
 ```
 
+Important: make this persistent so it survives server restarts.
+
+We have our swap file enabled, but when we reboot, the server will not automatically enable the file. We can change that though by modifying the fstab file.
+Edit the file with root privileges in your text editor:
+```
+sudo nano /etc/fstab
+```
+
+At the bottom of the file, you need to add a line that will tell the operating system to automatically use the file you created:
+```
+/swapfile   none    swap    sw    0   0
+```
+Save and close the file when you are finished. The next time you restart the server the swap file should be mounted.
+
 ## Install Java and NodeJS
 
 TODO: Add here the link to DO tutorial
