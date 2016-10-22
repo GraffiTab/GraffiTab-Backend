@@ -53,8 +53,8 @@ public class ProtocolCheckingFilter extends OncePerRequestFilter {
 			protocol = request.getScheme();
 		}
 
-		if (log.isDebugEnabled()) {
-			log.debug("Read protocol / scheme is: {}", protocol);
+		if (log.isTraceEnabled()) {
+			log.trace("Read protocol / scheme is: {}", protocol);
 		}
 
 		return protocol;
