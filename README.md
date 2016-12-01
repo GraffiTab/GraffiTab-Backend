@@ -4,7 +4,7 @@ Backend of the GraffiTab project
 
 ## License
 
-Copyright 2015 GraffiTab
+Copyright 2016 GraffiTab
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
