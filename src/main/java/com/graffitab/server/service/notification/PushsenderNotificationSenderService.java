@@ -115,6 +115,8 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 
 	private Map<String, String> buildMetadataMapForNotification(Notification notification) {
 		Map<String, String> metadata = new HashMap<String, String>();
+		metadata.put("type", notification.getNotificationType().name());
+
 		switch (notification.getNotificationType()) {
 			case COMMENT: {
 				NotificationComment typedNotification = ((NotificationComment) notification);

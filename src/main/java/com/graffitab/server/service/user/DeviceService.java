@@ -6,13 +6,14 @@ import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.graffitab.server.api.errors.RestApiException;
-import com.graffitab.server.api.errors.ResultCode;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.Device;
 import com.graffitab.server.persistence.model.Device.OSType;
 import com.graffitab.server.persistence.model.user.User;
 
+import lombok.extern.log4j.Log4j;
+
+@Log4j
 @Service
 public class DeviceService {
 
@@ -29,12 +30,13 @@ public class DeviceService {
 		userService.merge(currentUser);
 
 		// Check if a device with that token already exists.
-		if (device != null) {
-			throw new RestApiException(ResultCode.DEVICE_ALREADY_EXISTS, "A device with token " + token + " already exists");
+		if (device == null) {
+			Device toAdd = Device.device(osType, token);
+			currentUser.getDevices().add(toAdd);
 		}
-
-		Device toAdd = Device.device(osType, token);
-		currentUser.getDevices().add(toAdd);
+		else {
+			log.debug("A device with token " + token + " already exists");
+		}
 	}
 
 	@Transactional
@@ -44,11 +46,12 @@ public class DeviceService {
 		userService.merge(currentUser);
 
 		// Check if a device with that token exists.
-		if (device == null) {
-			throw new RestApiException(ResultCode.DEVICE_NOT_FOUND, "A device with token " + token + " was not found");
+		if (device != null) {
+			currentUser.getDevices().remove(device);
 		}
-
-		currentUser.getDevices().remove(device);
+		else {
+			log.debug("A device with token " + token + " was not found");
+		}
 	}
 
 	Device findDevicesWithTokenAndType(String token, OSType osType) {
