@@ -125,6 +125,7 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 				Streamable streamable = typedNotification.getCommentedStreamable();
 
 				metadata.put("commenterId", user.getId() + "");
+				metadata.put("commenterName", user.getFirstName() + " " + user.getLastName());
 				metadata.put("commentId", comment.getId() + "");
 				metadata.put("commentedStreamableId", streamable.getId() + "");
 				break;
@@ -135,6 +136,7 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 				Streamable streamable = typedNotification.getLikedStreamable();
 
 				metadata.put("likerId", user.getId() + "");
+				metadata.put("likerName", user.getFirstName() + " " + user.getLastName());
 				metadata.put("likedStreamableId", streamable.getId() + "");
 				break;
 			}
@@ -143,6 +145,7 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 				User user = typedNotification.getFollower();
 
 				metadata.put("followerId", user.getId() + "");
+				metadata.put("followerName", user.getFirstName() + " " + user.getLastName());
 				break;
 			}
 			case MENTION: {
@@ -152,6 +155,7 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 				Streamable streamable = typedNotification.getMentionedStreamable();
 
 				metadata.put("mentionerId", user.getId() + "");
+				metadata.put("mentionerName", user.getFirstName() + " " + user.getLastName());
 				metadata.put("mentionedCommentId", comment.getId() + "");
 				metadata.put("mentionedStreamableId", streamable.getId() + "");
 				break;
