@@ -2,8 +2,8 @@
 
 ## Initial setup
 
-* Source `environment.sh` script. Upload manually `environment.sh` stored in Google Docs and source it
-in the current shell
+* Source `environment.sh` script. This script is generated at deployment time from CircleCI environment variables. It can also
+be upload manually from the version stored in Google Docs
 ```
 source environment.sh
 ```
@@ -19,7 +19,8 @@ Add the graffitab user
 [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart) and
 [here](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-14-04).
 
-We could have provided the password directly in a script, these commands will prompt this will prompt:
+We could have provided the password directly in a script, these commands will prompt for it, add it to `sudo` usergroup
+and add the main deployment folder:
 ```
 adduser $DEPLOY_USERNAME
 usermod -aG sudo $DEPLOY_USERNAME
@@ -32,25 +33,37 @@ To test the created user:
  su - $DEPLOY_USERNAME
 ```
 
-* Allow passwordless ssh access as `graffitab`:
+* In order to allow passwordless ssh access as `graffitab` user between the servers we need to exchange ssh keys. First generate:
 ```
 $ ssh-keygen
 ```
 
-Accept all. Then create `authorized_keys` file inside `.ssh` directory in `/home/graffitab`
-and append the ssh private key existing in the other servers. Then test from your machine:
+Accept all. Then create `authorized_keys` file inside `.ssh` directory in `/home/graffitab` of other servers and append there
+the **public key** `id_rsa.pub`. Add to `autorized_keys` as many public keys as needed, then test from each source:
 ```
 $ ssh graffitab@serverurl
 ```
 
-* Add `graffitab` as a passwordless sudoer, so it can run sudo commands without password:
+Repeat for each server you want to ssh to:
+
+* Create keys
+* Create `authorized_keys` if not already. Append **public key** of the incoming servers.
+
+* Add `graffitab` as a passwordless sudoer, so it can run `sudo` commands without password:
 ```
 visudo -f /etc/sudoers.d/90-cloud-init-users
 ```
 
-Append here the following line:
+Append the following line:
 ```
 graffitab ALL=(ALL) NOPASSWD:ALL
+```
+
+If the file does not exist, it can be created anyway through visudo. Also ensure that at the bottom of `/etc/sudoers` file the following line is
+present:
+```
+...
+#includedir /etc/sudoers.d
 ```
 
 Now test a `sudo` command as graffitab, it shouldn't ask for a password:
@@ -58,6 +71,26 @@ Now test a `sudo` command as graffitab, it shouldn't ask for a password:
 $ su - graffitab
 $ sudo apt-get update
 ```
+
+* Make the SSHFS mount persistent. In order to do that, the file `/etc/fstab` needs to be aware of SSHFS. For example,
+to mount `dev02` `/data/uploads` folder into `dev01` server `/data/uploads` mount point, add the following to `/etc/fstab`:
+```
+graffitab@dev02.graffitab.com:/data/uploads /data/uploads fuse.sshfs _netdev,user,idmap=user,follow_symlinks,identityfile=/home/graffitab/.ssh/id_rsa,allow_other,default_permissions,uid=1000,gid=1000 0 0
+```
+
+Where `uid` / `gid` are the result of the commands `id -u graffitab` / `id -g username` respectively.
+
+Also, need to update FUSE configuration so that users other than root can access the mount. In `/etc/fuse.conf` change uncomment the line:
+```
+allow_other_user
+```
+
+Ensure passwordless  is in place for `graffitab` user. Test it by remounting:
+```
+$ sudo mount -a
+```
+
+Restart the server and check the folder is properly mounted.
 
 * Update repositories:
 ```
