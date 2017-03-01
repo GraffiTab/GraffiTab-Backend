@@ -79,10 +79,7 @@ ssh $DO_USER@$DO_SRV01_DOMAIN 'source ~/environment.sh && bash $DO_DEPLOYMENT_DI
 ssh $DO_USER@$DO_SRV01_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/start.sh' 2>&1
 
 echo "==== Starting application in ${ENVIRON}01 after deployment ===="
-# We run the start script as sudo because Tomcat is bound to port 80 on the machine, a privileged port. This can only be done by root.
-# We could have changed the port to another one and modify the load balancer configuration accordingly, but this is fine
-# for now
-ssh $DO_USER@$DO_SRV01_DOMAIN 'source ~/environment.sh && cd $DO_DEPLOYMENT_DIR && sudo nohup ./start.sh > start.log &' 2>&1
+ssh $DO_USER@$DO_SRV01_DOMAIN 'source ~/environment.sh && cd $DO_DEPLOYMENT_DIR && nohup ./start.sh > start.log &' 2>&1
 
 echo "= Waiting for startup in ${ENVIRON}01 ="
 ssh $DO_USER@$DO_SRV01_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/pollForStartup.sh && bash $DO_DEPLOYMENT_DIR/pollForStartup.sh' 2>&1
@@ -99,10 +96,8 @@ ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && bash $DO_DEPLOYMENT_DI
 ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/start.sh' 2>&1
 
 echo "==== Starting application in ${ENVIRON}02 after deployment ===="
-# We run the start script as sudo because Tomcat is bound to port 80 on the machine, a privileged port. This can only be done by root.
-# We could have changed the port to another one and modify the load balancer configuration accordingly, but this is fine
-# for now
-ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && cd $DO_DEPLOYMENT_DIR && sudo nohup ./start.sh > start.log &' 2>&1
+
+ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && cd $DO_DEPLOYMENT_DIR && nohup ./start.sh > start.log &' 2>&1
 
 echo "= Waiting for startup in in ${ENVIRON}02 ="
 ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/pollForStartup.sh && bash $DO_DEPLOYMENT_DIR/pollForStartup.sh' 2>&1
