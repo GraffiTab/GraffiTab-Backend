@@ -100,7 +100,7 @@ public class AssetService {
             transferableAsset.transferTo(tempFile);
 
             if (log.isDebugEnabled()) {
-                log.debug("Transferring file to temporary completed successfully", tempFile.getAbsolutePath());
+                log.debug("Transferring file to temporary completed successfully {}", tempFile.getAbsolutePath());
             }
             return tempFile;
         } catch (FileNotFoundException e) {
