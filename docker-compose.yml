@@ -1,0 +1,15 @@
+version: '2'
+services:
+  web:
+    image: graffitab/graffitab-server:0.1-local
+    ports:
+      - "8091:8091"
+    depends_on:
+      - redis
+    links:
+      - redis:redis
+  redis:
+    image: graffitab/redis:3
+    command: redis-server /usr/local/etc/redis/redis.conf --protected-mode no --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"

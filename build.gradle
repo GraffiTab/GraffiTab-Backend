@@ -48,10 +48,7 @@ repositories {
 
 // Some global properties
 
-def webappRootDir = "src/main/webapp"
 ext.configDir = "conf"
-sourceSets.main.output.classesDir =  file("$webappRootDir/WEB-INF/classes")
-sourceSets.main.output.resourcesDir =  file("$webappRootDir/WEB-INF/classes")
 
 def springVersion = "4.2.3.RELEASE"
 def jstlVersion = "1.1.2"
@@ -87,8 +84,6 @@ List jackson = ["com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
                 "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
 ]
 
-// "org.springframework:spring-webmvc:$springVersion"
-// "org.springframework:spring-core:$springVersion"
 List spring = [ "org.springframework:spring-tx:$springVersion",
                 "org.springframework:spring-orm:$springVersion",
                 "org.springframework:spring-test:$springVersion"]
@@ -129,8 +124,6 @@ dependencies {
     compile("org.apache.tiles:tiles-core:$tilesVersion") {
         exclude module: "jcl-over-slf4j"
     }
-
-    compile "org.apache.tiles:tiles-jsp:$tilesVersion"
 
     compile("org.slf4j:jcl-over-slf4j:$slf4jVersion") {
         exclude module: "slf4j-api"
@@ -185,6 +178,7 @@ dependencies {
     compile "org.springframework.session:spring-session-data-redis:$springSessionVersion"
     compile "org.springframework.session:spring-session:$springSessionVersion"
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("org.springframework.boot:spring-boot-devtools")
 
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.security:spring-security-test:4.0.3.RELEASE'
@@ -228,19 +222,17 @@ liquibase {
 def loadConfiguration() {
 
     def env = hasProperty('env') ? env : 'local'
+    def redisPassword = hasProperty('redisPassword') ? redisPassword : ''
 
     project.ext.env = env
+    project.ext.redisPassword = redisPassword
 
     println "=== Environment is $env ==="
 
     // defaults to local
     def configFile = 'conf/application.properties'
 
-    if (env == 'herokuDev') {
-        configFile = 'conf/application-heroku.properties'
-    } else if (env == 'openshiftDev') {
-        configFile = 'conf/application-openshift.properties'
-    } else if (env == 'digitalOcean') {
+    if (env == 'digitalOcean') {
         configFile = 'conf/application-digitalocean.properties'
     }
 
@@ -271,34 +263,6 @@ def loadConfiguration() {
        ext.dbPassword = appProperties.getProperty("db.password")
    }
 
-    if (env == 'herokuDev') {
-        // Heroku -- The environment variable DATABASE_URL contains the information
-        println("Reading config for Heroku from environment")
-        URI dbUri = new URI(System.getenv("DATABASE_URL"));
-        def username = dbUri.getUserInfo().split(":")[0];
-        def password = dbUri.getUserInfo().split(":")[1];
-        def dbJdbcUrl = "jdbc:mysql://" + dbUri.getHost() + dbUri.getPath();
-
-        ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$", ""))
-        ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$", ""))
-        ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$", ""))
-        ext.jdbcUrl = dbJdbcUrl
-        ext.dbUser = System.getenv(appProperties.getProperty("db.username")?.replace("\$", ""))
-        ext.dbPassword = System.getenv(appProperties.getProperty("db.password")?.replace("\$", ""))
-        println "Heroku DB Url: " + jdbcUrl
-    }
-
-    if  (env == 'openshiftDev') {
-        println("Reading config for Openshift from environment")
-        // Same as heroku without the DATABASE_URL
-        ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$","").replace("{","").replace("}",""))
-        ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$","").replace("{","").replace("}",""))
-        ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$","").replace("{","").replace("}",""))
-        ext.jdbcUrl = "jdbc:mysql://${dbHost}:${dbPort}/${dbName}?useUnicode=true"
-        ext.dbUser = System.getenv(appProperties.getProperty("db.username")?.replace("\$","").replace("{","").replace("}",""))
-        ext.dbPassword = System.getenv(appProperties.getProperty("db.password")?.replace("\$","").replace("{","").replace("}",""))
-    }
-
     if  (env == 'digitalOcean') {
         println("Reading config for DigitalOcean from environment")
 
@@ -317,11 +281,10 @@ def loadConfiguration() {
 task clean (type: Delete, overwrite: true) {
 
     doFirst {
-        println "Cleaning files: $buildDir, $webappRootDir/WEB-INF/classes"
+        println "Cleaning files: $buildDir"
     }
 
     delete file("$buildDir")
-    delete file("$webappRootDir/WEB-INF/classes")
 }
 
 task wrapper(type: Wrapper) {
@@ -370,6 +333,15 @@ task updateDb() {
   }
 }
 
+task runDocker(type:Exec) {
+    println "PAssword " + project.ext.redisPassword
+    commandLine './run-docker.sh', "${project.ext.redisPassword}"
+}
+
+task stopDocker(type:Exec) {
+    commandLine 'docker-compose', 'down'
+}
+
 task devBuild() {
   dependsOn processResources, compileJava
   doFirst {
@@ -377,7 +349,7 @@ task devBuild() {
   }
 }
 
-//TODO: adapt for DigitalOcean startup
+//TODO: adapt to./bu DigitalOcean startup
 task pollForStartup() {
 
   doLast {
