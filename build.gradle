@@ -1,7 +1,7 @@
 buildscript {
 
     ext {
-        springBootVersion = '1.3.0.RELEASE'
+        springBootVersion = '1.3.8.RELEASE'
     }
 
     repositories {
@@ -19,6 +19,8 @@ apply plugin: 'liquibase'
 apply plugin: 'java'
 apply plugin: 'spring-boot'
 
+loadConfiguration()
+
 jar {
     baseName = 'graffitab'
     version = '0.1'
@@ -33,6 +35,10 @@ test {
 		events "passed", "skipped", "failed"
 		exceptionFormat = 'full'
 	}
+}
+
+bootRepackage {
+    excludeDevtools = project.ext.excludeDevtools
 }
 
 sourceCompatibility = 1.8
@@ -75,10 +81,10 @@ def facebook4jVersion = "2.4.5"
 def imageScalingVersion = "0.8.6"
 def commonsFileuploadVersion = "1.3.1"
 def boneCpVersion = "0.8.0.RELEASE"
+
 //http://docs.spring.io/spring-security/site/migrate/current/3-to-4/html5/migrate-3-to-4-jc.html
 def springSecurityVersion = "4.0.3.RELEASE"
 def springSessionVersion = "1.2.0.RELEASE"
-
 
 List jackson = ["com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
                 "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
@@ -178,7 +184,12 @@ dependencies {
     compile "org.springframework.session:spring-session-data-redis:$springSessionVersion"
     compile "org.springframework.session:spring-session:$springSessionVersion"
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
-    compile("org.springframework.boot:spring-boot-devtools")
+
+    //if (project.ext.excludeDevtools) {
+    //    compile('org.springframework.boot:spring-boot-devtools') { transitive = false }
+    //} else {
+        compile('org.springframework.boot:spring-boot-devtools')
+    //}
 
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.security:spring-security-test:4.0.3.RELEASE'
@@ -198,8 +209,6 @@ dependencies {
 }
 
 
-loadConfiguration()
-
 // == Liquibase ==
 
 liquibase {
@@ -217,17 +226,20 @@ liquibase {
 }
 
 /**
- This can be passed from the command line like -Penv=value
+ These can be passed from the command line like -Penv=value
 */
 def loadConfiguration() {
 
     def env = hasProperty('env') ? env : 'local'
     def redisPassword = hasProperty('redisPassword') ? redisPassword : ''
+    def excludeDevtools = hasProperty('excludeDevtools') ? Boolean.parseBoolean(excludeDevtools) : true
 
     project.ext.env = env
     project.ext.redisPassword = redisPassword
+    project.ext.excludeDevtools = excludeDevtools
 
     println "=== Environment is $env ==="
+    println "Exclude Devtools: " + project.ext.excludeDevtools
 
     // defaults to local
     def configFile = 'conf/application.properties'
@@ -334,7 +346,6 @@ task updateDb() {
 }
 
 task runDocker(type:Exec) {
-    println "PAssword " + project.ext.redisPassword
     commandLine './run-docker.sh', "${project.ext.redisPassword}"
 }
 
@@ -349,7 +360,7 @@ task devBuild() {
   }
 }
 
-//TODO: adapt to./bu DigitalOcean startup
+//TODO: adapt to DigitalOcean startup
 task pollForStartup() {
 
   doLast {
