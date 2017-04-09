@@ -82,14 +82,28 @@ spring.devtools.remote.secret=graffitabfor
 ./build-redis.sh
 ```
 
-* Run:
+* Run with bash script:
 ```
 $ ./runDocker <REDIS_PASSWORD>
+```
+
+* Run from Gradle:
+```
+$ ./gradlew runDocker -PredisPassword=<REDIS_PASSWORD>
 ```
 
 TODO
 * Remove Spring Boot devtools for production builds [here](http://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-devtools.html#using-boot-devtools)
 * Add debugging configuration [here](https://medium.com/@lhartikk/development-environment-in-spring-boot-with-docker-734ad6c50b34)
+
+## Troubleshoot
+
+Check with app holds port open:
+```
+$ lsof -i tcp:portNumber
+or
+$ netstat -vanp tcp | grep 3000
+```
 
 ## License
 

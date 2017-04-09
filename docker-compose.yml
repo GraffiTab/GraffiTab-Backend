@@ -4,6 +4,7 @@ services:
     image: graffitab/graffitab-server:0.1-local
     ports:
       - "8091:8091"
+      - "8000:8000"
     depends_on:
       - redis
     links:
