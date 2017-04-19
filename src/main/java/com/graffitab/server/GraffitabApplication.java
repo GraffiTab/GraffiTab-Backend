@@ -32,7 +32,7 @@ public class GraffitabApplication extends SpringBootServletInitializer {
         return application.sources(GraffitabApplication.class, RedisSessionConfig.class, MainConfig.class, MainDatabaseConfig.class);
     }
 
-    @Override public void onStartup( ServletContext servletContext ) throws ServletException {
+    @Override public void onStartup(ServletContext servletContext) throws ServletException {
         super.onStartup(servletContext);
         servletContext.addListener(requestContextListener());
     }
