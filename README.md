@@ -37,8 +37,8 @@ session.backups.enabled=false
 
 # Local config
 # localhost not valid with Docker
-db.host=<YOUR LOCAL IP>
-db.port=<LOCAL DB PORT>
+db.host=mysql
+db.port=3306
 db.name=graffitab
 
 db.jdbcUrl=jdbc:mysql://${db.host}:${db.port}/${db.name}?useUnicode=true&amp;characterEncoding=UTF-8
@@ -74,12 +74,17 @@ spring.devtools.remote.secret=graffitabfor
 
 * Build the server Docker image:
 ```
-./build-docker.sh
+./build-server.sh
 ```
 
 * Build Redis image:
 ```
-./build-redis.sh
+./build-redis.sh <REDIS_PASSWORD>
+```
+
+* Build MySQL (empty password for now):
+```
+./build-mysql.sh
 ```
 
 * Run with bash script:
@@ -92,9 +97,7 @@ $ ./runDocker <REDIS_PASSWORD>
 $ ./gradlew runDocker -PredisPassword=<REDIS_PASSWORD>
 ```
 
-TODO
-* Remove Spring Boot devtools for production builds [here](http://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-devtools.html#using-boot-devtools)
-* Add debugging configuration [here](https://medium.com/@lhartikk/development-environment-in-spring-boot-with-docker-734ad6c50b34)
+Health checks for Redis and MySQL are based on the ones presented [here](https://github.com/docker-library/healthcheck)
 
 ## Troubleshoot
 
