@@ -1,0 +1,12 @@
+#!/bin/bash
+set -eo pipefail
+
+host="$(hostname -i || echo '127.0.0.1')"
+REDIS_PASSWORD=$(cat /usr/local/bin/password.txt)
+if ping="$(redis-cli -h "$host" -a "$REDIS_PASSWORD" ping)" && [ "$ping" = 'PONG' ]; then
+    echo "Redis is online"
+	exit 0
+fi
+
+echo "Redis is not online"
+exit 1
