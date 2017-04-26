@@ -34,7 +34,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Configuration
 @EnableWebSecurity
-@EnableAutoConfiguration(exclude={SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class, SpringBootWebSecurityConfiguration.class})
+@EnableAutoConfiguration(exclude={SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class})
 @Import(SecurityBeansConfig.class)
 @Log4j2
 public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
