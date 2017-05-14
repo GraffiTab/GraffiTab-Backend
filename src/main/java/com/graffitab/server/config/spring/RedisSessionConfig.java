@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.session.data.redis.RedisOperationsSessionRepository;
@@ -15,6 +16,7 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
  * Created by davidfernandez on 01/07/2016.
  */
 @Log4j2
+@Profile("main")
 @EnableRedisHttpSession
 public class RedisSessionConfig {
 

@@ -1,7 +1,6 @@
 package com.graffitab.server.test.api;
 
-import java.util.Properties;
-
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +11,7 @@ import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.transaction.TransactionDefinition;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import java.util.Properties;
 
 @Configuration
 @Profile("unit-test")
@@ -52,9 +51,9 @@ public class TestDatabaseConfig {
 				private static final long serialVersionUID = 1L;
 
 				{
-	                setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLInnoDBDialect");
+	                setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
 	                setProperty("hibernate.show_sql", "false");
-	                setProperty("hibernate.hbm2ddl.auto", "validate");
+	                setProperty("hibernate.hbm2ddl.auto", "update");
 	            }
 	        };
 	    }

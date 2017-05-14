@@ -66,7 +66,6 @@ def jacksonVersion = "2.7.3"
 def commonsIoVersion = "2.4"
 def log4jVersion = "2.1"
 def slf4jVersion = "1.7.7"
-def jUnitVersion = "4.9"
 def mockitoVersion = "1.9.5"
 def jsonPathVersion = "2.0.0"
 def hsqldbVersion = "2.2.8"
@@ -91,8 +90,7 @@ List jackson = ["com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
 ]
 
 List spring = [ "org.springframework:spring-tx:$springVersion",
-                "org.springframework:spring-orm:$springVersion",
-                "org.springframework:spring-test:$springVersion"]
+                "org.springframework:spring-orm:$springVersion"]
 
 List springSecurity = ["org.springframework.security:spring-security-core:${springSecurityVersion}",
                        "org.springframework.security:spring-security-web:${springSecurityVersion}",
@@ -199,8 +197,7 @@ dependencies {
     testCompile "com.mortennobel:java-image-scaling:$imageScalingVersion"
 
     runtime "mysql:mysql-connector-java:$mysqlVersion"
-
-    testCompile "junit:junit:$jUnitVersion"
+    
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "com.jayway.jsonpath:json-path:$jsonPathVersion"
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
