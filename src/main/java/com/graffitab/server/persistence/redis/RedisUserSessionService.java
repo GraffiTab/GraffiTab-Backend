@@ -1,31 +1,26 @@
 package com.graffitab.server.persistence.redis;
 
-import java.util.Collection;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import com.graffitab.server.persistence.model.user.User;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.session.ExpiringSession;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 import org.springframework.stereotype.Service;
 
-import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.service.user.UserService;
-
-import lombok.extern.log4j.Log4j2;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.Collection;
 
 /**
  * Created by davidfernandez on 05/07/2016.
  */
 
 @Log4j2
+@Profile("main")
 @Service
-public class RedisUserSessionService {
-
-    @Autowired
-    private UserService userService;
+public class RedisUserSessionService implements UserSessionService {
 
     @Autowired
     private RedisOperationsSessionRepository redisOperationsSessionRepository;
@@ -35,10 +30,6 @@ public class RedisUserSessionService {
 
     @Autowired
     private FindByIndexNameSessionRepository<? extends ExpiringSession> sessions;
-
-    public void deleteSessionInRedis(String sessionId) {
-        redisOperationsSessionRepository.delete(sessionId);
-    }
 
     public void logoutEverywhere(User user, boolean keepCurrentSession) {
         HttpSession session = httpServletRequest.getSession(false);
@@ -66,7 +57,7 @@ public class RedisUserSessionService {
         });
     }
 
-    public Collection<? extends ExpiringSession> getSessionsForUser(User user) {
+    private Collection<? extends ExpiringSession> getSessionsForUser(User user) {
         Collection<? extends ExpiringSession> usersSessions = sessions
                 .findByIndexNameAndIndexValue(
                         FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME,
@@ -78,6 +69,10 @@ public class RedisUserSessionService {
         });
 
         return usersSessions;
+    }
+
+    private void deleteSessionInRedis(String sessionId) {
+        redisOperationsSessionRepository.delete(sessionId);
     }
 
 }
