@@ -1,7 +1,7 @@
 package com.graffitab.server.test.api;
 
+import com.graffitab.server.GraffitabApplication;
 import com.graffitab.server.api.controller.user.MeApiController;
-import com.graffitab.server.config.spring.MainConfig;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.user.User;
@@ -68,7 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //https://github.com/arpitaggarwal/spring-boot-redis
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes={MainConfig.class, TestDatabaseConfig.class})
+@SpringBootTest(classes={TestDatabaseConfig.class, GraffitabApplication.class})
 @ActiveProfiles("unit-test")
 public class UserApiTest {
 

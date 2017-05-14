@@ -1,25 +1,5 @@
 package com.graffitab.server.service.user;
 
-import java.util.List;
-import java.util.Locale;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.hibernate.Criteria;
-import org.hibernate.Query;
-import org.hibernate.criterion.Restrictions;
-import org.javatuples.Pair;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.graffitab.server.api.dto.ListItemsResult;
 import com.graffitab.server.api.dto.user.FullUserDto;
 import com.graffitab.server.api.dto.user.UserDto;
@@ -36,7 +16,6 @@ import com.graffitab.server.persistence.model.externalprovider.ExternalProviderT
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.persistence.model.user.UserSocialFriendsContainer;
-import com.graffitab.server.persistence.redis.RedisUserSessionService;
 import com.graffitab.server.service.ActivityService;
 import com.graffitab.server.service.ProxyUtilities;
 import com.graffitab.server.service.TransactionUtils;
@@ -50,8 +29,25 @@ import com.graffitab.server.service.social.SocialNetworksService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
 import com.graffitab.server.util.PasswordGenerator;
-
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.Criteria;
+import org.hibernate.Query;
+import org.hibernate.criterion.Restrictions;
+import org.javatuples.Pair;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by david
@@ -64,7 +60,7 @@ public class UserService {
 	private HibernateDaoImpl<User, Long> userDao;
 
 	@Resource
-	private RedisUserSessionService redisUserSessionService;
+	private UserSessionService userSessionService;
 
 	@Resource
 	private DatastoreService datastoreService;
@@ -544,7 +540,7 @@ public class UserService {
 		user.setFailedLogins(0);
 
 		// Logout from all devices
-		redisUserSessionService.logoutEverywhere(user, false);
+		userSessionService.logoutEverywhere(user, false);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Successfully reset password for user " + user.getUsername());
@@ -569,7 +565,7 @@ public class UserService {
 		user.setFailedLogins(0);
 
 		// Logout from all devices but this one
-        redisUserSessionService.logoutEverywhere(user, true);
+        userSessionService.logoutEverywhere(user, true);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Successfully changed password for user " + user.getUsername());
