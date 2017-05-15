@@ -13,6 +13,8 @@ services:
     links:
       - redis:redis
       - mysql:mysql
+    mem_limit: 400m
+    #cpu_quota: 75000
   redis:
     image: graffitab/redis:3
     command: redis-server /usr/local/etc/redis/redis.conf --protected-mode no --requirepass ${REDIS_PASSWORD}

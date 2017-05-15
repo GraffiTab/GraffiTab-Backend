@@ -369,6 +369,8 @@ public class UserService {
 		String assetGuid = assetService.transferAssetFile(transferable, contentLength);
 		assetToAdd.setGuid(assetGuid);
 
+		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetGuid);
+
 		User user = getCurrentUser();
 
 		// Create asset in PROCESSING state in DB
@@ -376,7 +378,7 @@ public class UserService {
 			// Need to reassign, as 'user' is final in this lambda
 			// and we cannot change it
 			User storedUser = user;
-			switch(userImageAsset) {
+			switch (userImageAsset) {
 				case AVATAR:
 					if (user.getAvatarAsset() != null) {
 						assetService.addPreviousAssetGuidMapping(assetGuid, user.getAvatarAsset().getGuid());
@@ -396,6 +398,8 @@ public class UserService {
 			storedUser.setUpdatedOn(new DateTime());
 			merge(storedUser);
 		});
+
+		assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
 
 		return assetToAdd;
 	}
