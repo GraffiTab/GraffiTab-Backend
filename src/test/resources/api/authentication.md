@@ -58,8 +58,15 @@ curl -i -H "Content-Type: application/json" -X POST -d '{"user":{
 
 ## Upload cover
 
-curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Cache-Control: no-cache" -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/cover?username=david&password=password1"
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Cache-Control: no-cache" -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/avatar?username=david&password=password1"
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" --cookie "JSESSIONID=7af0af3a-2abf-4957-84b2-a765229e51a7" -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/avatar"
 
-curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/streamables/graffiti"
+## Create / update streamable
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/streamables/graffiti"
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" --cookie "JSESSIONID=7af0af3a-2abf-4957-84b2-a765229e51a7" -H "Cache-Control: no-cache" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/streamables/graffiti"
 
 curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/streamables/graffiti/11"
+
+## Asset polling
+
+curl -X GET --cookie "JSESSIONID=7af0af3a-2abf-4957-84b2-a765229e51a7" "http://localhost:8091/api/assets/o3wEI4EhEEUnX/progress"

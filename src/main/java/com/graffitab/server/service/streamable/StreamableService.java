@@ -1,15 +1,5 @@
 package com.graffitab.server.service.streamable;
 
-import java.util.Locale;
-
-import javax.annotation.Resource;
-
-import org.hibernate.Query;
-import org.javatuples.Pair;
-import org.joda.time.DateTime;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.graffitab.server.api.dto.ListItemsResult;
 import com.graffitab.server.api.dto.streamable.FullStreamableDto;
 import com.graffitab.server.api.dto.streamable.StreamableGraffitiDto;
@@ -34,6 +24,14 @@ import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.util.GPSUtils;
+import org.hibernate.Query;
+import org.javatuples.Pair;
+import org.joda.time.DateTime;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.Locale;
 
 @Service
 public class StreamableService {
@@ -86,6 +84,7 @@ public class StreamableService {
 
 	public Streamable createStreamableGraffiti(StreamableGraffitiDto streamableGraffitiDto, TransferableStream transferable, long contentLength) {
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
+		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
 
 		Streamable streamable = transactionUtils.executeInTransactionWithResult(() -> {
 			User currentUser = userService.findUserById(userService.getCurrentUser().getId());
@@ -100,16 +99,20 @@ public class StreamableService {
 			return streamableGraffiti;
 		});
 
+		assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
+
 		// Add activity to all followers.
 		activityService.addCreateStreamableActivityAsync(streamable.getUser(), streamable);
 
 		return streamable;
 	}
 
+
 	public Streamable editStreamableGraffiti(Long streamableId, StreamableGraffitiDto streamableGraffitiDto,
 											 TransferableStream transferable, long contentLength) {
 
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
+		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
 
 		Pair<Streamable, String> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
 			Streamable streamable = findStreamableById(streamableId);
@@ -143,6 +146,9 @@ public class StreamableService {
 		if (previousStreamableAssetGuid != null) {
 			assetService.addPreviousAssetGuidMapping(assetToAdd.getGuid(), previousStreamableAssetGuid);
 		}
+
+		assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
+
 		return streamable;
 	}
 
