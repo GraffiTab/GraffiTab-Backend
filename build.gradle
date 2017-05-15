@@ -48,7 +48,6 @@ repositories {
     mavenCentral()
 }
 
-
 // Gradle Tool Window in IntelliJ IDEA:
 // https://www.jetbrains.com/idea/help/manipulating-the-tool-windows.html
 
@@ -66,7 +65,6 @@ def jacksonVersion = "2.7.3"
 def commonsIoVersion = "2.4"
 def log4jVersion = "2.1"
 def slf4jVersion = "1.7.7"
-def mockitoVersion = "1.9.5"
 def jsonPathVersion = "2.0.0"
 def hsqldbVersion = "2.2.8"
 def orikaVersion = "1.4.6"
@@ -182,13 +180,8 @@ dependencies {
     compile "org.springframework.session:spring-session-data-redis:$springSessionVersion"
     compile "org.springframework.session:spring-session:$springSessionVersion"
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
-
-    //if (project.ext.excludeDevtools) {
-    //    compile('org.springframework.boot:spring-boot-devtools') { transitive = false }
-    //} else {
-        compile('org.springframework.boot:spring-boot-devtools')
-    //}
-
+    
+    compile('org.springframework.boot:spring-boot-devtools')
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.security:spring-security-test:4.0.3.RELEASE'
     testCompile 'org.subethamail:subethasmtp-wiser:1.2'
@@ -197,8 +190,7 @@ dependencies {
     testCompile "com.mortennobel:java-image-scaling:$imageScalingVersion"
 
     runtime "mysql:mysql-connector-java:$mysqlVersion"
-    
-    testCompile "org.mockito:mockito-core:$mockitoVersion"
+
     testCompile "com.jayway.jsonpath:json-path:$jsonPathVersion"
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
     testCompile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"

@@ -22,10 +22,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -52,11 +56,13 @@ import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -74,6 +80,13 @@ public class UserApiTest {
 
 	    @Resource
 	    private WebApplicationContext ctx;
+
+		@Mock
+		private MessageSource messageSource;
+
+		@Resource
+		@InjectMocks
+		private EmailService emailService;
 
 	    @Resource
 	    private UserService userService;
@@ -115,6 +128,10 @@ public class UserApiTest {
 					.addFilters(springSecurityFilterChain).build();
 
 			wiser = startWiser();
+			MockitoAnnotations.initMocks(this);
+			given(this.messageSource.getMessage("email.subject.welcome", null, Locale.ENGLISH))
+					.willReturn("Welcome to GraffiTab");
+
 			replaceEmailSenderService();
 			replaceDatastoreService();
 		}
@@ -281,8 +298,6 @@ public class UserApiTest {
 				.content(json))
 				.andExpect(status().is(200));
 	}
-
-
 
 	private User fillTestUser() {
 	    	User testUser = new User();
