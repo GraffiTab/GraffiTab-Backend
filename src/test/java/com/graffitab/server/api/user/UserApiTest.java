@@ -1,4 +1,4 @@
-package com.graffitab.server.test.api;
+package com.graffitab.server.api.user;
 
 import com.graffitab.server.GraffitabApplication;
 import com.graffitab.server.api.controller.user.MeApiController;
@@ -15,7 +15,9 @@ import com.graffitab.server.service.store.AmazonS3DatastoreService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.RunAsUser;
 import com.graffitab.server.service.user.UserService;
+import com.graffitab.server.test.api.TestDatabaseConfig;
 import com.graffitab.server.util.GuidGenerator;
+import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
@@ -136,7 +138,6 @@ public class UserApiTest {
 			replaceDatastoreService();
 		}
 
-		// Runs after every test
 		@After
 		public void nukeDb() {
 			transactionUtils.executeInTransaction(() -> {
@@ -246,7 +247,6 @@ public class UserApiTest {
 	    }
 
 	    @Test
-	    @Transactional
 	    public void addAvatarAssetTest() throws Exception {
 	    	User loggedInUser = createUser();
 	    	InputStream in = this.getClass().getResourceAsStream("/api/test-asset.jpg");
@@ -254,7 +254,7 @@ public class UserApiTest {
 			HashMap<String, String> contentTypeParams = new HashMap<>();
 			contentTypeParams.put("boundary", "265001916915724");
 			MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
-			mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/avatar")
+			MvcResult result = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/avatar")
 					.file(assetFile)
 	    			.with(user(loggedInUser))
 					.contentType(mediaType))
@@ -262,8 +262,11 @@ public class UserApiTest {
 	                .andExpect(content().contentType("application/json;charset=UTF-8"))
 	                .andExpect(jsonPath("$.asset.guid").isNotEmpty())
 	                .andExpect(jsonPath("$.asset.type").value(Asset.AssetType.IMAGE.name()))
-					.andExpect(jsonPath("$.asset.state").value(Asset.AssetState.PROCESSING.name()));
+					.andExpect(jsonPath("$.asset.state").value(Asset.AssetState.PROCESSING.name())).andReturn();
 
+			String content = result.getResponse().getContentAsString();
+			String assetGuid = JsonPath.read(content, "$.asset.guid");
+			UserTestHelper.pollForAsset(mockMvc, loggedInUser, assetGuid, 10000L);
 	    }
 
 	@Test
@@ -275,7 +278,7 @@ public class UserApiTest {
 		HashMap<String, String> contentTypeParams = new HashMap<>();
 		contentTypeParams.put("boundary", "265001916915724");
 		MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
-		MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/cover")
+		mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/cover")
 				.file(assetFile)
 				.with(user(loggedInUser))
 				.contentType(mediaType))
@@ -285,7 +288,7 @@ public class UserApiTest {
 				.andExpect(jsonPath("$.asset.type").value(Asset.AssetType.IMAGE.name()))
 				.andExpect(jsonPath("$.asset.state").value(Asset.AssetState.PROCESSING.name()))
 				.andReturn();
-		String content = result.getResponse().getContentAsString();
+
 	}
 
 	//@Test
