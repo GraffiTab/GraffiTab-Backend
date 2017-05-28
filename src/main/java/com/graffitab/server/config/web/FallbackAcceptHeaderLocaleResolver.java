@@ -3,6 +3,7 @@ package com.graffitab.server.config.web;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,14 +35,22 @@ public class FallbackAcceptHeaderLocaleResolver extends AcceptHeaderLocaleResolv
                 currentLocale = Locale.forLanguageTag(currentLanguage);
             } else {
                 // This is the value of the Accept-Language header
-                Locale requestLocaleFromAcceptHeader = request.getLocale();
+                String acceptHeaderValue = request.getHeader("Accept-Language");
 
-                if (requestLocaleFromAcceptHeader == null) {
+
+                if (!StringUtils.hasText(acceptHeaderValue)) {
                     log.warn("No locale found for this request in Accept-Language Header -- falling back to English");
                     return Locale.ENGLISH;
                 }
 
-                currentLocale = requestLocaleFromAcceptHeader;
+                String lang = acceptHeaderValue;
+                if (acceptHeaderValue.contains("-")) {
+                    lang = acceptHeaderValue.split("-")[0];
+                } else if (acceptHeaderValue.contains("_")) {
+                    lang = acceptHeaderValue.split("_")[0];
+                }
+
+                currentLocale = new Locale(lang);
             }
 
             if (supportedLanguagesList.contains(currentLocale.getLanguage())) {
