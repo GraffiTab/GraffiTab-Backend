@@ -31,8 +31,7 @@ database:
 
 test:
   override:
-    #- ./gradlew test -Penv=digitalOceanDev
-    - echo "Skipping tests"
+    - ./gradlew test -Penv=digitalOcean
 
 # Need to add one valid private SSH Key to CircleCI UI so it can authenticate against Openshift
 deployment:
