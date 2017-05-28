@@ -371,35 +371,41 @@ public class UserService {
 
 		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetGuid);
 
-		User user = getCurrentUser();
+		try {
 
-		// Create asset in PROCESSING state in DB
-		transactionUtils.executeInTransaction(() -> {
-			// Need to reassign, as 'user' is final in this lambda
-			// and we cannot change it
-			User storedUser = user;
-			switch (userImageAsset) {
-				case AVATAR:
-					if (user.getAvatarAsset() != null) {
-						assetService.addPreviousAssetGuidMapping(assetGuid, user.getAvatarAsset().getGuid());
-					}
-					storedUser.setAvatarAsset(assetToAdd);
-					break;
-				case COVER:
-					if (user.getCoverAsset() != null) {
-						assetService.addPreviousAssetGuidMapping(assetGuid, user.getCoverAsset().getGuid());
-					}
-					storedUser.setCoverAsset(assetToAdd);
-					break;
-				default:
-					log.warn("Image user asset type not recognized -- fix code!" + userImageAsset.name());
+			RunAsUser.set(getCurrentUser());
 
-			}
-			storedUser.setUpdatedOn(new DateTime());
-			merge(storedUser);
-		});
+			// Create asset in PROCESSING state in DB
+			transactionUtils.executeInTransaction(() -> {
+				// Need to reassign, as 'user' is final in this lambda
+				// and we cannot change it
+				User user = findUserById(getCurrentUser().getId());
+				switch (userImageAsset) {
+					case AVATAR:
+						if (user.getAvatarAsset() != null) {
+							assetService.addPreviousAssetGuidMapping(assetGuid, user.getAvatarAsset().getGuid());
+						}
+						user.setAvatarAsset(assetToAdd);
+						break;
+					case COVER:
+						if (user.getCoverAsset() != null) {
+							assetService.addPreviousAssetGuidMapping(assetGuid, user.getCoverAsset().getGuid());
+						}
+						user.setCoverAsset(assetToAdd);
+						break;
+					default:
+						log.warn("Image user asset type not recognized -- fix code!" + userImageAsset.name());
 
-		assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
+				}
+
+				user.setUpdatedOn(new DateTime());
+			});
+
+			assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
+
+		} finally {
+			RunAsUser.clear();
+		}
 
 		return assetToAdd;
 	}
