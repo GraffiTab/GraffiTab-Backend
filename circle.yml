@@ -19,6 +19,7 @@ general:
       - master # list of branches to build
       - /feature.*/ # or regexes
       - /hotfix.*/
+      - develop
 
 dependencies:
   override:
