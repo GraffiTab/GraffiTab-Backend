@@ -1,11 +1,22 @@
 package com.graffitab.server.persistence.model.user;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.Device;
+import com.graffitab.server.persistence.model.Location;
+import com.graffitab.server.persistence.model.activity.Activity;
+import com.graffitab.server.persistence.model.asset.Asset;
+import com.graffitab.server.persistence.model.externalprovider.ExternalProvider;
+import com.graffitab.server.persistence.model.notification.Notification;
+import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.util.DateTimeToLongConverter;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+import org.joda.time.DateTime;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -27,26 +38,12 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
-import org.joda.time.DateTime;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.graffitab.server.persistence.dao.Identifiable;
-import com.graffitab.server.persistence.model.Device;
-import com.graffitab.server.persistence.model.Location;
-import com.graffitab.server.persistence.model.activity.Activity;
-import com.graffitab.server.persistence.model.asset.Asset;
-import com.graffitab.server.persistence.model.externalprovider.ExternalProvider;
-import com.graffitab.server.persistence.model.notification.Notification;
-import com.graffitab.server.persistence.model.streamable.Streamable;
-import com.graffitab.server.persistence.util.DateTimeToLongConverter;
-
-import lombok.Getter;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by david.
@@ -314,6 +311,14 @@ public class User implements Identifiable<Long>, UserDetails {
 	@Override
 	public String getUsername() {
 		return username;
+	}
+
+	public String getEmail() {
+		return email.toLowerCase();
+	}
+
+	public void setEmail(String email) {
+		this.email = email.toLowerCase();
 	}
 
 	/**

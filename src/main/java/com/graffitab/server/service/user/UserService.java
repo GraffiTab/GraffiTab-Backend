@@ -726,7 +726,7 @@ public class UserService {
     @Transactional
     public User findByUsernameOrEmail(String usernameOrEmail) {
         if (usernameOrEmail.contains(("@"))) {
-            return findByEmail(usernameOrEmail);
+            return findByEmail(usernameOrEmail.toLowerCase());
         } else {
             return findByUsername(usernameOrEmail);
         }
