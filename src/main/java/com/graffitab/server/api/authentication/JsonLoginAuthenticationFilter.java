@@ -1,16 +1,5 @@
 package com.graffitab.server.api.authentication;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONObject;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import com.graffitab.server.api.errors.LoginUserNotActiveException;
 import com.graffitab.server.api.errors.MaximumLoginAttemptsException;
 import com.graffitab.server.api.errors.RestApiException;
@@ -19,8 +8,17 @@ import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.service.AuthenticationService;
 import com.graffitab.server.service.user.UserService;
-
 import lombok.extern.log4j.Log4j2;
+import org.json.JSONObject;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Log4j2
 public class JsonLoginAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
