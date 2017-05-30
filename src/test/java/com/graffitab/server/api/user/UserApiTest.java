@@ -1,5 +1,6 @@
 package com.graffitab.server.api.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graffitab.server.GraffitabApplication;
 import com.graffitab.server.api.controller.user.MeApiController;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
@@ -18,6 +19,7 @@ import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.test.api.TestDatabaseConfig;
 import com.graffitab.server.util.GuidGenerator;
 import com.jayway.jsonpath.JsonPath;
+import lombok.Data;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
@@ -30,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -101,6 +104,9 @@ public class UserApiTest {
 
     @Autowired
     private ImageUtilsService imageUtilsService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AmazonS3DatastoreService datastoreService;
@@ -293,11 +299,89 @@ public class UserApiTest {
 
     }
 
+    @Test
+    public void createUserWithLowercaseEmailTest() throws Exception {
+        registerUserWithEmail("john.doe@mailinator.com");
+    }
+
+    @Test
+    public void loginWithUppercaseEmailTest() throws Exception {
+        loginWith("John.Doe@mailinator.com", "password");
+    }
+
+    @Test
+    public void loginWithEmailTest() throws Exception {
+        loginWith("john.doe@mailinator.com", "password");
+    }
+
+    @Test
+    public void loginWithUsernameTest() throws Exception {
+        loginWith("johnd", "password");
+    }
+
+
+    //TODO: failing - implement
+    @Test
+    public void createUserWithUppercaseEmailTest() throws Exception {
+        registerUserWithEmail("John.Doe@mailinator.com");
+    }
+
+
+    //@Test
+    public void editUserWithUppercaseEmailTest() throws Exception {
+
+    }
+
+    //@Test
+    public void editUserWithLowercaseEmailTest() {
+
+    }
+
+    private void loginWith(String usernameOrEmail, String password) throws Exception {
+        createUser();
+
+        ObjectMapper mapper = new ObjectMapper();
+        LoginDto loginDto = new LoginDto();
+        loginDto.setPassword(password);
+        loginDto.setUsername(usernameOrEmail);
+        String json = mapper.writeValueAsString(loginDto);
+
+        mockMvc.perform(post("/api/login")
+                .contentType("application/json;charset=UTF-8")
+                .content(json))
+                .andExpect(status().is(200)).andReturn();
+
+        //TODO: check for cookies
+        // System.out.println("Result: " + result.getResponse().getContentAsString() + " " + result.getResponse().getHeaderNames());
+        //   .andExpect(header().string("Set-Cookie", contains("JSESSIONID")));
+
+        //        Cookie[] cookies = result.getResponse().getCookies();
+        //        int a = cookies.length;
+    }
+
+
+    @Data
+    private class LoginDto {
+        private String username;
+        private String password;
+    }
+
+    private void registerUserWithEmail(String email) throws Exception {
+        User testUser = fillTestUserWithEmail(email);
+        testUser.setCreatedOn(null);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = "{ \"user\":" + mapper.writeValueAsString(testUser) +"}";
+        performRegistrationTestAndAssert(null, json, "Welcome to GraffiTab");
+    }
+
     private void createUserTest(String language, String welcomeMessage) throws Exception {
         fillTestUser();
         InputStream in = this.getClass().getResourceAsStream("/api/user.json");
         String json = IOUtils.toString(in);
+        performRegistrationTestAndAssert(language, json, welcomeMessage);
+    }
 
+    private void performRegistrationTestAndAssert(String language, String json, String welcomeMessage) throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequestBuilder = post("/api/users")
                 .contentType("application/json;charset=UTF-8");
 
@@ -320,15 +404,19 @@ public class UserApiTest {
         assertEquals(welcomeMessage, message.getMimeMessage().getSubject());
     }
 
-    //@Test
-    public void logoutEverywhereTest() throws Exception {
-        User loggedInUser = createUser();
-        String json = "{\"username\":\"johnd\",\"password\":\"password\"}";
-        //1. Log in
-        mockMvc.perform(post("/api/login")
-                .contentType("application/json;charset=UTF-8")
-                .content(json))
-                .andExpect(status().is(200));
+    // Aux code ==============================================================================
+
+    private User fillTestUserWithEmail(String email) {
+        User testUser = new User();
+        testUser.setFirstName("John");
+        testUser.setLastName("Doe");
+        testUser.setEmail(email);
+        testUser.setUsername("johnd");
+        testUser.setPassword(passwordEncoder.encode("password"));
+        testUser.setAccountStatus(User.AccountStatus.ACTIVE);
+        testUser.setCreatedOn(new DateTime());
+        testUser.setGuid(GuidGenerator.generate());
+        return testUser;
     }
 
     private User fillTestUser() {
@@ -337,7 +425,7 @@ public class UserApiTest {
         testUser.setLastName("Doe");
         testUser.setEmail("john.doe@mailinator.com");
         testUser.setUsername("johnd");
-        testUser.setPassword("password");
+        testUser.setPassword(passwordEncoder.encode("password"));
         testUser.setAccountStatus(User.AccountStatus.ACTIVE);
         testUser.setCreatedOn(new DateTime());
         testUser.setGuid(GuidGenerator.generate());
@@ -364,9 +452,17 @@ public class UserApiTest {
             user1 = testUser;
             return testUser;
         });
-
         return u;
+    }
 
+    public User createUserWithEmail(String email) {
+        User u = transactionUtils.executeInTransactionWithResult(() -> {
+            User testUser = fillTestUserWithEmail(email);
+            userDao.persist(testUser);
+            user1 = testUser;
+            return testUser;
+        });
+        return u;
     }
 
     public void deleteUser(User user) {
