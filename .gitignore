@@ -43,3 +43,4 @@ gatling/conf
 gatling/lib
 gatling/results
 gatling/target
+out/
