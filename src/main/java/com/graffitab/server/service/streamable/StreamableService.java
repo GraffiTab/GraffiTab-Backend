@@ -24,6 +24,7 @@ import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.util.GPSUtils;
+import com.graffitab.server.util.GuidGenerator;
 import org.hibernate.Query;
 import org.javatuples.Pair;
 import org.joda.time.DateTime;
@@ -85,28 +86,36 @@ public class StreamableService {
 	public Streamable createStreamableGraffiti(StreamableGraffitiDto streamableGraffitiDto, TransferableStream transferable, long contentLength) {
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
 		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
+		Streamable streamable = createStreamableInTransaction(streamableGraffitiDto, assetToAdd);
+		assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
+		return streamable;
+	}
 
+	public Streamable createStreamableGraffitiFromExternalResource(StreamableGraffitiDto streamableGraffitiDto) {
+		Asset assetToAdd = addStreamableAssetFromExternalSource(streamableGraffitiDto.getAsset().getLink(),
+				streamableGraffitiDto.getAsset().getThumbnailLink());
+		return createStreamableInTransaction(streamableGraffitiDto, assetToAdd);
+	}
+
+	private Streamable createStreamableInTransaction(StreamableGraffitiDto streamableGraffitiDto, Asset assetToAdd) {
 		Streamable streamable = transactionUtils.executeInTransactionWithResult(() -> {
 			User currentUser = userService.findUserById(userService.getCurrentUser().getId());
 			Streamable streamableGraffiti = new StreamableGraffiti(streamableGraffitiDto.getLatitude(),
-														   streamableGraffitiDto.getLongitude(),
-														   streamableGraffitiDto.getRoll(),
-														   streamableGraffitiDto.getYaw(),
-														   streamableGraffitiDto.getPitch());
+					streamableGraffitiDto.getLongitude(),
+					streamableGraffitiDto.getRoll(),
+					streamableGraffitiDto.getYaw(),
+					streamableGraffitiDto.getPitch());
 			streamableGraffiti.setAsset(assetToAdd);
 			streamableGraffiti.setUser(currentUser);
 			currentUser.getStreamables().add(streamableGraffiti);
 			return streamableGraffiti;
 		});
 
-		assetService.enqueueDeferredAssetProcessing(deferredAssetProcessingRunnable);
-
 		// Add activity to all followers.
 		activityService.addCreateStreamableActivityAsync(streamable.getUser(), streamable);
 
 		return streamable;
 	}
-
 
 	public Streamable editStreamableGraffiti(Long streamableId, StreamableGraffitiDto streamableGraffitiDto,
 											 TransferableStream transferable, long contentLength) {
@@ -156,6 +165,14 @@ public class StreamableService {
 		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
 		String assetGuid = assetService.transferAssetFile(transferable, contentLength);
 		assetToAdd.setGuid(assetGuid);
+		return assetToAdd;
+	}
+
+	private Asset addStreamableAssetFromExternalSource(String url, String thumbnailUrl) {
+		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
+		assetToAdd.setUrl(url);
+		assetToAdd.setThumbnailUrl(url);
+		assetToAdd.setGuid(GuidGenerator.generate());
 		return assetToAdd;
 	}
 

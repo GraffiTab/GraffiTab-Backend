@@ -1,15 +1,22 @@
 package com.graffitab.server.persistence.model.asset;
 
-import javax.persistence.*;
-
 import com.graffitab.server.persistence.dao.Identifiable;
 import com.graffitab.server.util.GuidGenerator;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Version;
 
 @NamedQueries({
 		@NamedQuery(
@@ -72,8 +79,11 @@ public class Asset implements Identifiable<Long> {
 	@Column(name = "state", nullable = false)
 	private AssetState state;
 
+	@Column(name = "url")
+	private String url;
 
-
+	@Column(name = "thumbnail_url")
+	private String thumbnailUrl;
 
 	@Override
 	public Long getId() {

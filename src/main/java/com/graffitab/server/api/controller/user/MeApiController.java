@@ -1,23 +1,5 @@
 package com.graffitab.server.api.controller.user;
 
-import java.io.IOException;
-
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.graffitab.server.api.dto.ActionCompletedResult;
 import com.graffitab.server.api.dto.CountResult;
@@ -59,8 +41,24 @@ import com.graffitab.server.service.user.DeviceService;
 import com.graffitab.server.service.user.ExternalProviderService;
 import com.graffitab.server.service.user.LocationService;
 import com.graffitab.server.service.user.UserService;
-
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
 
 @Log4j2
 @RestController
@@ -313,19 +311,35 @@ public class MeApiController {
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateStreamableResult createGraffiti(
 			@RequestPart("properties") StreamableGraffitiDto streamableDto,
-			@RequestPart("file") @NotNull @NotBlank MultipartFile file) {
-		String contentType = file.getContentType();
-		if (!contentType.equalsIgnoreCase(MediaType.IMAGE_JPEG_VALUE) && !contentType.equalsIgnoreCase(MediaType.IMAGE_PNG_VALUE)) {
-			throw new RestApiException(ResultCode.UNSUPPORTED_FILE_TYPE,
-					"The file type '" + contentType + "' is not supported.");
-		}
+			@RequestPart("file") MultipartFile file) {
+
+		TransferableStream transferableStream = null;
+		CreateStreamableResult addStreamableResult = new CreateStreamableResult();
 
 		try {
-			CreateStreamableResult addStreamableResult = new CreateStreamableResult();
-			TransferableStream transferableStream = new MultipartFileTransferableStream(file);
-			Streamable streamable = streamableService.createStreamableGraffiti(streamableDto, transferableStream, file.getSize());
+
+			Streamable streamable;
+
+			if (streamableDto.getAsset() == null || !StringUtils.hasText(streamableDto.getAsset().getLink())) {
+
+				// Uploaded image
+				String contentType = file.getContentType();
+				if (!contentType.equalsIgnoreCase(MediaType.IMAGE_JPEG_VALUE) && !contentType.equalsIgnoreCase(MediaType.IMAGE_PNG_VALUE)) {
+					throw new RestApiException(ResultCode.UNSUPPORTED_FILE_TYPE,
+							"The file type '" + contentType + "' is not supported.");
+				}
+				transferableStream = new MultipartFileTransferableStream(file);
+				streamable = streamableService.createStreamableGraffiti(streamableDto, transferableStream, file.getSize());
+
+			} else {
+
+				// From external resource
+				streamable = streamableService.createStreamableGraffitiFromExternalResource(streamableDto);
+			}
+
 			addStreamableResult.setStreamable(mapper.map(streamable, FullStreamableDto.class));
 			return addStreamableResult;
+
 		} catch (Exception e) {
 			throw new RestApiException(ResultCode.STREAM_COULD_NOT_BE_READ,
 					"File stream could not be read.");

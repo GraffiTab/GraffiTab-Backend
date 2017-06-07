@@ -22,4 +22,5 @@ public class AssetDto {
 	private Integer thumbnailWidth;
 	private Integer thumbnailHeight;
 	private String state;
+	private String thumbnailLink;
 }
