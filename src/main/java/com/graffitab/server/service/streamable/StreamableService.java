@@ -1,12 +1,14 @@
 package com.graffitab.server.service.streamable;
 
 import com.graffitab.server.api.dto.ListItemsResult;
+import com.graffitab.server.api.dto.asset.AssetDto;
 import com.graffitab.server.api.dto.streamable.FullStreamableDto;
 import com.graffitab.server.api.dto.streamable.StreamableGraffitiDto;
 import com.graffitab.server.api.dto.user.UserDto;
 import com.graffitab.server.api.errors.EntityNotFoundException;
 import com.graffitab.server.api.errors.RestApiException;
 import com.graffitab.server.api.errors.ResultCode;
+import com.graffitab.server.api.mapper.OrikaMapper;
 import com.graffitab.server.persistence.dao.HibernateDaoImpl;
 import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.asset.Asset.AssetType;
@@ -72,6 +74,9 @@ public class StreamableService {
 	@Resource
 	private AssetService assetService;
 
+	@Resource
+	private OrikaMapper mapper;
+
 	@Transactional(readOnly = true)
 	public Streamable getStreamable(Long id) {
 		Streamable streamable = findStreamableById(id);
@@ -92,8 +97,7 @@ public class StreamableService {
 	}
 
 	public Streamable createStreamableGraffitiFromExternalResource(StreamableGraffitiDto streamableGraffitiDto) {
-		Asset assetToAdd = addStreamableAssetFromExternalSource(streamableGraffitiDto.getAsset().getLink(),
-				streamableGraffitiDto.getAsset().getThumbnailLink());
+		Asset assetToAdd = addStreamableAssetFromExternalSource(streamableGraffitiDto.getAsset());
 		return createStreamableInTransaction(streamableGraffitiDto, assetToAdd);
 	}
 
@@ -168,10 +172,10 @@ public class StreamableService {
 		return assetToAdd;
 	}
 
-	private Asset addStreamableAssetFromExternalSource(String url, String thumbnailUrl) {
-		Asset assetToAdd = Asset.asset(AssetType.IMAGE);
-		assetToAdd.setUrl(url);
-		assetToAdd.setThumbnailUrl(url);
+	private Asset addStreamableAssetFromExternalSource(AssetDto assetDto) {
+		Asset assetToAdd = mapper.map(assetDto, Asset.class);
+		assetToAdd.setState(Asset.AssetState.COMPLETED);
+		assetToAdd.setAssetType(AssetType.IMAGE);
 		assetToAdd.setGuid(GuidGenerator.generate());
 		return assetToAdd;
 	}

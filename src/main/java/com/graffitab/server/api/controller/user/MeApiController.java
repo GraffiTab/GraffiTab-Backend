@@ -306,6 +306,23 @@ public class MeApiController {
 		return userService.getFollowingOrFollowersForUserResult(false, null, offset, limit);
 	}
 
+	@RequestMapping(value = "/streamables/graffiti/import",method = RequestMethod.POST)
+	@ResponseBody
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public CreateStreamableResult importGraffiti(@RequestBody StreamableGraffitiDto streamableDto) {
+		CreateStreamableResult addStreamableResult = new CreateStreamableResult();
+		Streamable streamable;
+
+		if (streamableDto.getAsset() != null && StringUtils.hasText(streamableDto.getAsset().getLink())) {
+			// From external resource
+			streamable = streamableService.createStreamableGraffitiFromExternalResource(streamableDto);
+			addStreamableResult.setStreamable(mapper.map(streamable, FullStreamableDto.class));
+			return addStreamableResult;
+		} else {
+			throw new RestApiException(ResultCode.ASSET_NOT_FOUND, "Asset url has not been provided to import into streamable");
+		}
+	}
+
 	@RequestMapping(value = "/streamables/graffiti", method = RequestMethod.POST)
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
@@ -313,36 +330,28 @@ public class MeApiController {
 			@RequestPart("properties") StreamableGraffitiDto streamableDto,
 			@RequestPart("file") MultipartFile file) {
 
-		TransferableStream transferableStream = null;
+		TransferableStream transferableStream;
 		CreateStreamableResult addStreamableResult = new CreateStreamableResult();
 
 		try {
 
 			Streamable streamable;
 
-			if (streamableDto.getAsset() == null || !StringUtils.hasText(streamableDto.getAsset().getLink())) {
-
-				// Uploaded image
-				String contentType = file.getContentType();
-				if (!contentType.equalsIgnoreCase(MediaType.IMAGE_JPEG_VALUE) && !contentType.equalsIgnoreCase(MediaType.IMAGE_PNG_VALUE)) {
-					throw new RestApiException(ResultCode.UNSUPPORTED_FILE_TYPE,
-							"The file type '" + contentType + "' is not supported.");
-				}
-				transferableStream = new MultipartFileTransferableStream(file);
-				streamable = streamableService.createStreamableGraffiti(streamableDto, transferableStream, file.getSize());
-
-			} else {
-
-				// From external resource
-				streamable = streamableService.createStreamableGraffitiFromExternalResource(streamableDto);
+			// Uploaded image
+			String contentType = file.getContentType();
+			if (!contentType.equalsIgnoreCase(MediaType.IMAGE_JPEG_VALUE) &&
+					!contentType.equalsIgnoreCase(MediaType.IMAGE_PNG_VALUE)) {
+				throw new RestApiException(ResultCode.UNSUPPORTED_FILE_TYPE,
+						"The file type '" + contentType + "' is not supported.");
 			}
+			transferableStream = new MultipartFileTransferableStream(file);
+			streamable = streamableService.createStreamableGraffiti(streamableDto, transferableStream, file.getSize());
 
 			addStreamableResult.setStreamable(mapper.map(streamable, FullStreamableDto.class));
 			return addStreamableResult;
 
 		} catch (Exception e) {
-			throw new RestApiException(ResultCode.STREAM_COULD_NOT_BE_READ,
-					"File stream could not be read.");
+			throw new RestApiException(ResultCode.STREAM_COULD_NOT_BE_READ, "File   stream could not be read.");
 		}
 	}
 

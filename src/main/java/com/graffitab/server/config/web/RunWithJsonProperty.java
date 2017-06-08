@@ -20,7 +20,7 @@ public class RunWithJsonProperty {
 
 	public static void set(String jsonProperty) {
 		if (JSON_PROPERTY_NAME.get() != null) {
-			throw new RuntimeException("Already running as a customer, please call endRunAsCustomer first.");
+			throw new RuntimeException("Already running with property");
 		}
 
 		if (log.isDebugEnabled()) {

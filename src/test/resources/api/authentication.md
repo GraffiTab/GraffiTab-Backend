@@ -63,9 +63,13 @@ curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW"
 
 ## Create / update streamable
 curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/streamables/graffiti"
-curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" --cookie "JSESSIONID=7af0af3a-2abf-4957-84b2-a765229e51a7" -H "Cache-Control: no-cache" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/streamables/graffiti"
+curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" --cookie "JSESSIONID=f4cf5ce5-6462-470f-afef-756e4e2b7767" -H "Cache-Control: no-cache" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8091/api/users/me/streamables/graffiti"
 
 curl -X POST -H "Content-Type: multipart/form-data; boundary=----WebYWxkTrZu0gW" -H "Authorization: Basic ZGF2aWQ6cGFzc3dvcmQx" -H "Cache-Control: no-cache" -H "Postman-Token: f933fed5-b610-14f7-b233-274eb158c909" -F 'properties={"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234};type=application/json' -F "file=@graffiti.jpg" "http://localhost:8080/api/users/me/streamables/graffiti/11"
+
+
+curl -X POST --cookie "JSESSIONID=f4cf5ce5-6462-470f-afef-756e4e2b7767"  -H "Content-Type: application/json" -d '{"latitude":55.123, "longitude":3.123456, "roll":12.3, "yaw":13.4, "pitch":1.234}' http://localhost:8091/api/users/me/streamables/graffiti/import
+
 
 ## Asset polling
 
