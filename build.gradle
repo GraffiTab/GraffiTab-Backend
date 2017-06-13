@@ -55,11 +55,8 @@ repositories {
 
 ext.configDir = "conf"
 
-def springVersion = "4.2.3.RELEASE"
-def jstlVersion = "1.1.2"
+def springVersion = "4.3.6.RELEASE"
 def hibernateVersion = "4.3.5.Final"
-def c3p0Version = "0.9.1.2"
-def tilesVersion = "3.0.0"
 def mysqlVersion = "5.1.27"
 def jacksonVersion = "2.7.3"
 def commonsIoVersion = "2.4"
@@ -78,6 +75,8 @@ def facebook4jVersion = "2.4.5"
 def imageScalingVersion = "0.8.6"
 def commonsFileuploadVersion = "1.3.1"
 def boneCpVersion = "0.8.0.RELEASE"
+def c3p0Version = "0.9.1.2"
+
 
 //http://docs.spring.io/spring-security/site/migrate/current/3-to-4/html5/migrate-3-to-4-jc.html
 def springSecurityVersion = "4.0.3.RELEASE"
@@ -117,15 +116,8 @@ configurations {
 
 dependencies {
 
-    compile "javax.servlet:jstl:$jstlVersion",
-            "taglibs:standard:$jstlVersion",
-            "c3p0:c3p0:$c3p0Version",
-            "mysql:mysql-connector-java:$mysqlVersion",
+    compile "mysql:mysql-connector-java:$mysqlVersion",
             "org.hibernate:hibernate-core:$hibernateVersion"
-
-    compile("org.apache.tiles:tiles-core:$tilesVersion") {
-        exclude module: "jcl-over-slf4j"
-    }
 
     compile("org.slf4j:jcl-over-slf4j:$slf4jVersion") {
         exclude module: "slf4j-api"
@@ -167,7 +159,7 @@ dependencies {
     // for OAuth 2.0
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.8.RELEASE'
     compile 'org.json:json:20151123'
-    compile 'org.apache.commons:commons-dbcp2:2.1.1'
+    //compile 'org.apache.commons:commons-dbcp2:2.1.1'
 
     // Spring Boot
     compile 'org.springframework.boot:spring-boot-starter'
@@ -191,6 +183,8 @@ dependencies {
     testCompile 'javamail:javamail:1.3.3'
     testCompile "com.mortennobel:java-image-scaling:$imageScalingVersion"
     testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+    testCompile "c3p0:c3p0:$c3p0Version"
+
 
     runtime "mysql:mysql-connector-java:$mysqlVersion"
 
