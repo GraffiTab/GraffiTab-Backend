@@ -41,6 +41,6 @@ deployment:
     commands:
       - cp deploy/deploy.sh . && chmod +x deploy.sh && ./deploy.sh && rm deploy.sh
   development:
-    branch: [/feature.*/, /hotfix.*/]
+    branch: [/feature.*/, /hotfix.*/, /develop/]
     commands:
       - cp deploy/deploy.sh . && chmod +x deploy.sh && ./deploy.sh && rm deploy.sh
