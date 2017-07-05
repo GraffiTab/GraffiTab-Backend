@@ -451,17 +451,17 @@ public class UserService {
 
 		Pair<User, Boolean> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
 			User toFollow = findUserById(toFollowId);
+			User innerUser = findUserById(currentUser.getId());
 
 			if (toFollow != null) {
 				Boolean isFollowed = false;
 
 				// Users can't follow themselves.
-				if (currentUser.equals(toFollow)) {
+				if (innerUser.equals(toFollow)) {
 					throw new RestApiException(ResultCode.INVALID_FOLLOWEE, "You cannot follow yourself");
 				}
 
-				if (!currentUser.isFollowing(toFollow)) {
-					User innerUser = findUserById(currentUser.getId());
+				if (!innerUser.isFollowing(toFollow)) {
 					innerUser.getFollowing().add(toFollow);
 					isFollowed = true;
 				}
@@ -493,7 +493,7 @@ public class UserService {
 		User toUnfollow = findUserById(toUnfollowId);
 
 		if (toUnfollow != null) {
-			User currentUser = getCurrentUser();
+			User currentUser = findUserById(getCurrentUser().getId());
 			currentUser.getFollowing().remove(toUnfollow);
 			merge(currentUser);
 

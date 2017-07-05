@@ -1,5 +1,13 @@
 package com.graffitab.server.service;
 
+import lombok.extern.log4j.Log4j2;
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.LazyInitializer;
+import org.hibernate.proxy.pojo.javassist.JavassistLazyInitializer;
+import org.joda.time.DateTime;
+import org.springframework.util.ClassUtils;
+
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -9,15 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import lombok.extern.log4j.Log4j2;
-
-import org.hibernate.Hibernate;
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.proxy.LazyInitializer;
-import org.hibernate.proxy.pojo.javassist.JavassistLazyInitializer;
-import org.joda.time.DateTime;
-import org.springframework.util.ClassUtils;
 
 @Log4j2
 public class ProxyUtilities {
@@ -83,22 +82,12 @@ public class ProxyUtilities {
         	return;
         }
 
-        if (Collection.class.isAssignableFrom(clazz)) {
-        	if (!isNestedCollectionElement) {
-        		initializeCollection(object);
-        	} // else finalize recursion
-        } else if (Map.class.isAssignableFrom(object.getClass())) {
-            Map<?, ?> map = (Map<?, ?>) object;
-            for (Object key : map.keySet()) {
-                initializeObject(key, isNestedCollectionElement);
-                initializeObject(map.get(key), isNestedCollectionElement);
-            }
-        } else {
+        if (!Collection.class.isAssignableFrom(clazz) && !Map.class.isAssignableFrom(object.getClass())) {
             initializeProxy(object, isNestedCollectionElement);
         }
     }
 
-    private static void initializeCollection(Object object) {
+    public static void initializeCollection(Object object) {
         if (object instanceof HibernateProxy && !Hibernate.isInitialized(object)) {
             Hibernate.initialize(object);
         }

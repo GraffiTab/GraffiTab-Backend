@@ -3,7 +3,6 @@ package com.graffitab.server.api.authentication;
 import com.graffitab.server.api.dto.user.UserDto;
 import com.graffitab.server.api.dto.user.result.GetUserResult;
 import com.graffitab.server.api.mapper.OrikaMapper;
-import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.service.user.UserSessionService;
 import lombok.extern.log4j.Log4j2;
@@ -50,7 +49,7 @@ public class JsonResponseLoginSuccessHandler implements AuthenticationSuccessHan
 			throws IOException, ServletException {
 
 		GetUserResult result = new GetUserResult();
-		UserDto dto = mapper.map((User)authentication.getPrincipal(), UserDto.class);
+		UserDto dto = mapper.map(authentication.getPrincipal(), UserDto.class);
 		result.setUser(dto);
 
 		if (storeSession && sessionBackupsEnabled) {
