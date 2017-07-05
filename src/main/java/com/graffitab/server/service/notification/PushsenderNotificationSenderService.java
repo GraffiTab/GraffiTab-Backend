@@ -1,20 +1,5 @@
 package com.graffitab.server.service.notification;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import com.devsu.push.sender.service.async.AsyncAndroidPushService;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.Device;
@@ -29,6 +14,19 @@ import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.ProxyUtilities;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.user.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class PushsenderNotificationSenderService implements NotificationSenderService {
@@ -93,7 +91,7 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 
 			List<Device> devices = transactionUtils.executeInTransactionWithResult(() -> {
 				User innerUser = userService.findUserById(user.getId());
-				ProxyUtilities.initializeObjectWithOneLevelCollections(innerUser.getDevices());
+				ProxyUtilities.initializeCollection(innerUser.getDevices());
 				return innerUser.getDevices();
 			});
 
