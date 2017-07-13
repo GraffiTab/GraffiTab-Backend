@@ -38,9 +38,5 @@ conf/redis-local.conf
 dump.rdb
 .settings
 LICENSE
-gatling/bin
-gatling/conf
-gatling/lib
-gatling/results
 gatling/target
 out/
