@@ -1,0 +1,10 @@
+{
+  "simulation": "graffitab.Registration",
+  "simulationId": "registration",
+  "start": 1500221333094,
+  "description": "",
+  "scenarios": ["Sign up into GraffiTab"],
+  "assertions": [
+
+  ]
+}

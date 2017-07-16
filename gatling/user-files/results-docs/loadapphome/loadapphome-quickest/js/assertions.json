@@ -1,0 +1,10 @@
+{
+  "simulation": "graffitab.LoadAppHome",
+  "simulationId": "loadapphome",
+  "start": 1500221647953,
+  "description": "",
+  "scenarios": ["Load GraffiTab App"],
+  "assertions": [
+
+  ]
+}
