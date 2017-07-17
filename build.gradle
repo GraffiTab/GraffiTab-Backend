@@ -196,7 +196,7 @@ liquibase {
   activities {
     main {
       changeLogFile "database/database-update/database-changelog.xml"
-      url "$jdbcUrl"
+      url "$liquibaseJdbcUrl"
       username "$dbUser"
       password "$dbPassword"
       classpath "$rootDir"
@@ -249,9 +249,11 @@ def loadConfiguration() {
        // No environment variables when running locally
        println("Reading config for local environment")
        ext.dbHost = appProperties.getProperty("db.host")
+       ext.dbExternalHost = ext.dbHost
        ext.dbPort = appProperties.getProperty("db.port")
        ext.dbName = appProperties.getProperty("db.name")
        ext.jdbcUrl = "jdbc:mysql://${dbHost}:${dbPort}/${dbName}?useUnicode=true&amp;characterEncoding=UTF-8"
+       ext.liquibaseJdbcUrl = ext.jdbcUrl
        ext.dbUser = appProperties.getProperty("db.username")
        ext.dbPassword = appProperties.getProperty("db.password")
    }
@@ -260,15 +262,19 @@ def loadConfiguration() {
         println("Reading config for DigitalOcean from environment")
 
         // Tidy up the strings in properties file so they can be read directly as env variables
+
+        ext.dbExternalHost = System.getenv(appProperties.getProperty("db.externalHost")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbName = System.getenv(appProperties.getProperty("db.name")?.replace("\$","").replace("{","").replace("}",""))
         ext.jdbcUrl = "jdbc:mysql://${dbHost}:${dbPort}/${dbName}?useUnicode=true"
+        ext.liquibaseJdbcUrl = "jdbc:mysql://${dbExternalHost}:${dbPort}/${dbName}?useUnicode=true"
         ext.dbUser = System.getenv(appProperties.getProperty("db.username")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbPassword = System.getenv(appProperties.getProperty("db.password")?.replace("\$","").replace("{","").replace("}",""))
     }
 
     println "JDBC Url: " + ext.jdbcUrl
+    println "Liquibase JDBC Url: " + ext.liquibaseJdbcUrl
 }
 
 task wrapper(type: Wrapper) {
