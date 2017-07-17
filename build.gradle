@@ -262,7 +262,6 @@ def loadConfiguration() {
         println("Reading config for DigitalOcean from environment")
 
         // Tidy up the strings in properties file so they can be read directly as env variables
-
         ext.dbExternalHost = System.getenv(appProperties.getProperty("db.externalHost")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbHost = System.getenv(appProperties.getProperty("db.host")?.replace("\$","").replace("{","").replace("}",""))
         ext.dbPort = System.getenv(appProperties.getProperty("db.port")?.replace("\$","").replace("{","").replace("}",""))
