@@ -28,7 +28,7 @@ public class AssetMapper extends CustomMapper<Asset, AssetDto> {
 		}
 
 		if (StringUtils.hasText(asset.getThumbnailUrl())) {
-			assetDto.setThumbnailLink(asset.getThumbnailUrl());
+			assetDto.setThumbnail(asset.getThumbnailUrl());
 		} else {
 			assetDto.setThumbnail(datastoreService.generateThumbnailLink(asset.getGuid()));
 		}
