@@ -130,12 +130,19 @@ $ openssl req -nodes -newkey rsa:2048 -keyout graffitab.com.key -out graffitab.c
 
 * Use the CSR key to get a CRT file from the certification provider
 
-* Get the `.crt` file and upload it to the server
+* Get the all the `.crt` files and upload them to the server
 
-* Put together `.key` and `.crt` as a `.pem` file
+* Put together `.key` and `.crt` as a `.pem` file alongside the intermediate certificates in the zip bundle
 ```
-$ cat dev.graffitab.com.crt dev.graffitab.com.key > dev.graffitab.com.pem
-$ cp dev.graffitab.com.pem /etc/ssl/private/
+# The order of these commands matters
+$ cat COMODORSADomainValidationSecureServerCA.crt COMODORSAAddTrustCA.crt AddTrustExternalCARoot.crt > dev_graffitab_com.ca-bundle
+$ cat dev.graffitab.com.key >> dev.graffitab.com.pem
+$ cat dev_graffitab_com.crt >> dev.graffitab.com.pem
+$ cat dev_graffitab_com.ca-bundle >> dev.graffitab.com.pem
+$ cp dev.graffitab.com.pem /etc/ssl/private
+
+# Restart HAproxy
+$ sudo service haproxy restart
 ```
 
 * Store all the `.pem`,`.crt`,`.key` in a safe place
