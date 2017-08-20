@@ -300,6 +300,47 @@ public class UserApiTest {
     }
 
     @Test
+    public void addStreamableTest() throws Exception {
+        User loggedInUser = createUser();
+        InputStream in = this.getClass().getResourceAsStream("/api/test-asset.jpg");
+        MockMultipartFile streamableFile = new MockMultipartFile("file", "test-asset.jpg", "image/jpeg", in);
+        String streamableJson = "{\"latitude\":55.123, \"longitude\":3.123456, \"roll\":12.3, \"yaw\":13.4, \"pitch\":1.234}";
+        MockMultipartFile jsonFile = new MockMultipartFile("properties", "", "application/json", streamableJson.getBytes());
+
+       HashMap<String, String> contentTypeParams = new HashMap<>();
+        contentTypeParams.put("boundary", "265001916915724");
+       MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
+
+        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/streamables/graffiti")
+                .file(streamableFile)
+                .file(jsonFile)
+                .with(user(loggedInUser))
+                .contentType(mediaType))
+                .andExpect(status().is(200))
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.streamable.asset.guid").isNotEmpty())
+                .andExpect(jsonPath("$.streamable.asset.type").value(Asset.AssetType.IMAGE.name()))
+                .andExpect(jsonPath("$.streamable.asset.state").value(Asset.AssetState.PROCESSING.name()))
+                .andExpect(jsonPath("$.streamable.latitude").value(55.123))
+                .andExpect(jsonPath("$.streamable.longitude").value(3.123456))
+                .andExpect(jsonPath("$.streamable.roll").value(12.3))
+                .andExpect(jsonPath("$.streamable.yaw").value(13.4))
+                .andExpect(jsonPath("$.streamable.pitch").value(1.234))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        String assetGuid = JsonPath.read(content, "$.streamable.asset.guid");
+        UserTestHelper.pollForAsset(mockMvc, loggedInUser, assetGuid, 10000L);
+
+    }
+
+    //TODO:
+   // @Test
+    public void addStreamableThroughImportTest() throws Exception {
+
+    }
+
+    @Test
     public void createUserWithLowercaseEmailTest() throws Exception {
         registerUserWithEmail("john.doe@mailinator.com");
     }

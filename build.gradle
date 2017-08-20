@@ -19,6 +19,7 @@ buildscript {
 apply plugin: 'liquibase'
 apply plugin: 'java'
 apply plugin: 'spring-boot'
+apply plugin: "jacoco"
 
 loadConfiguration()
 
@@ -187,6 +188,19 @@ dependencies {
     testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
     testCompile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
 
+}
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/jacocoHtml"
+    }
 }
 
 

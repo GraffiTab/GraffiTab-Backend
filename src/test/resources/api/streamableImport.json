@@ -1,0 +1,17 @@
+{
+    "streamable":{
+        "latitude":55.123,
+        "longitude":3.123456,
+        "roll":12.3,
+        "yaw":13.4,
+        "pitch":1.234,
+        "asset": {
+            "link": "http://img12.deviantart.net/92ef/i/2016/332/f/b/february_by_sirmaril-dapvf13.jpg",
+            "height": 1811,
+            "width": 1280,
+            "thumbnailLink": "http://t13.deviantart.net/LT23SMCZ19Ltkk03NB8rHFb0EB4=/fit-in/150x150/filters:no_upscale():origin()/pre01/92ea/th/pre/i/2016/332/f/b/february_by_sirmaril-dapvf13.jpg",
+            "thumbnailHeight": 150,
+            "thumbnailWidth": 106
+        }
+    }
+}
