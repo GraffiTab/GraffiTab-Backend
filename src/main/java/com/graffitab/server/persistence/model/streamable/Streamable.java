@@ -1,7 +1,17 @@
 package com.graffitab.server.persistence.model.streamable;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.Comment;
+import com.graffitab.server.persistence.model.asset.Asset;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.util.BooleanToStringConverter;
+import com.graffitab.server.persistence.util.DateTimeToLongConverter;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+import org.joda.time.DateTime;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -26,21 +36,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
-import org.joda.time.DateTime;
-
-import com.graffitab.server.persistence.dao.Identifiable;
-import com.graffitab.server.persistence.model.Comment;
-import com.graffitab.server.persistence.model.asset.Asset;
-import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.persistence.util.BooleanToStringConverter;
-import com.graffitab.server.persistence.util.DateTimeToLongConverter;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
 
 @NamedQueries({
 	@NamedQuery(
@@ -194,6 +191,9 @@ public abstract class Streamable implements Identifiable<Long> {
 	@Convert(converter = BooleanToStringConverter.class)
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted;
+
+	@Column(name = "text")
+	protected String text;
 
 	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "asset_id")

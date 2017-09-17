@@ -28,4 +28,6 @@ public class StreamableDto {
 	private Double roll;
 	private Double yaw;
 	private Double pitch;
+
+	private String text;
 }

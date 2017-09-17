@@ -1,11 +1,11 @@
 package com.graffitab.server.persistence.model.streamable;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter
@@ -37,6 +37,16 @@ public class StreamableGraffiti extends Streamable {
 	public StreamableGraffiti(Double latitude, Double longitude, Double roll, Double yaw, Double pitch) {
 		super(StreamableType.GRAFFITI);
 
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.roll = roll;
+		this.yaw = yaw;
+		this.pitch = pitch;
+	}
+
+	public StreamableGraffiti(Double latitude, Double longitude, Double roll, Double yaw, Double pitch, String text) {
+		super(StreamableType.GRAFFITI);
+		super.text = text;
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.roll = roll;

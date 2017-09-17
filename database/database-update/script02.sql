@@ -23,3 +23,6 @@ update gt_user set is_recommendation='Y' where username in ('flickr', 'deviantar
 
 --changeset david:v200cs07
 update gt_user set is_recommendation='N' where is_recommendation='0'
+
+--changeset david:v200cs08
+alter table streamable add text varchar(5000) DEFAULT NULL;

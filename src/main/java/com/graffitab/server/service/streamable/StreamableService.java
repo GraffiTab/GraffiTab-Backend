@@ -89,6 +89,7 @@ public class StreamableService {
 	}
 
 	public Streamable createStreamableGraffiti(StreamableGraffitiDto streamableGraffitiDto, TransferableStream transferable, long contentLength) {
+		// TODO: validate text of streamable
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
 		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
 		Streamable streamable = createStreamableInTransaction(streamableGraffitiDto, assetToAdd);
@@ -97,6 +98,7 @@ public class StreamableService {
 	}
 
 	public Streamable createStreamableGraffitiFromExternalResource(StreamableGraffitiDto streamableGraffitiDto) {
+		// TODO: validate text of streamable
 		Asset assetToAdd = addStreamableAssetFromExternalSource(streamableGraffitiDto.getAsset());
 		return createStreamableInTransaction(streamableGraffitiDto, assetToAdd);
 	}
@@ -108,7 +110,7 @@ public class StreamableService {
 					streamableGraffitiDto.getLongitude(),
 					streamableGraffitiDto.getRoll(),
 					streamableGraffitiDto.getYaw(),
-					streamableGraffitiDto.getPitch());
+					streamableGraffitiDto.getPitch(), streamableGraffitiDto.getText());
 			streamableGraffiti.setAsset(assetToAdd);
 			streamableGraffiti.setUser(currentUser);
 			currentUser.getStreamables().add(streamableGraffiti);
@@ -123,7 +125,7 @@ public class StreamableService {
 
 	public Streamable editStreamableGraffiti(Long streamableId, StreamableGraffitiDto streamableGraffitiDto,
 											 TransferableStream transferable, long contentLength) {
-
+		// TODO: validate text of streamable
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
 		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
 

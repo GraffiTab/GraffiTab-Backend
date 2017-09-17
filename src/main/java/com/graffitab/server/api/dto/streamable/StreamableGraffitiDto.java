@@ -12,4 +12,5 @@ public class StreamableGraffitiDto {
 	private Double yaw;
 	private Double pitch;
 	private AssetDto asset;
+	private String text;
 }
