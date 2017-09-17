@@ -480,4 +480,12 @@ public class MeApiController {
 			@RequestParam(value="limit", required = false) Integer limit) {
 		return streamableService.getUserMentionsResult(userService.getCurrentUser().getId(), offset, limit);
 	}
+
+	@RequestMapping(value = {"/whotofollow"}, method = RequestMethod.GET)
+	@Transactional(readOnly = true)
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public ListItemsResult<UserDto> whoToFollow(@RequestParam(value="offset", required = false) Integer offset,
+												@RequestParam(value="limit", required = false) Integer limit) {
+		return userService.findRecommendedUsersToFollow(offset, limit);
+	}
 }

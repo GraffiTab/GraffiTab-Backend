@@ -760,4 +760,12 @@ public class UserService {
         User user = findByUsernameOrEmail(usernameOrEmail);
         user.setFailedLogins(0);
     }
+
+	@Transactional
+	public ListItemsResult<UserDto> findRecommendedUsersToFollow(Integer offset, Integer limit) {
+		User currentUser = getCurrentUser();
+		Query query = userDao.createNamedQuery("User.findWhoToFollow");
+		query.setParameter("currentUserId", currentUser.getId());
+		return pagingService.getPagedItems(User.class, UserDto.class, offset, limit, query);
+	}
 }

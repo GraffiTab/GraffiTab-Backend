@@ -8,6 +8,7 @@ import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.externalprovider.ExternalProvider;
 import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.util.BooleanToStringConverter;
 import com.graffitab.server.persistence.util.DateTimeToLongConverter;
 import lombok.Getter;
 import lombok.Setter;
@@ -152,6 +153,19 @@ import java.util.Map;
 			  + "join u.externalProviders e "
 			  + "where e.externalProviderType = :externalProviderType "
 			  + "and e.externalUserId = :externalUserId"
+	),
+
+//	select id
+//		from gt_user
+//		where is_recommendation = 'Y' and id not in (
+//
+//		select following_id from following where user_id = 5
+	@NamedQuery(
+		name = "User.findWhoToFollow",
+		query = "select u "
+				+ "from User u "
+				+ "where u.isRecommendation = 'Y' "
+				+ "and u.id not in (select f.id from User fu join fu.following f where fu.id = :currentUserId)"
 	)
 })
 
@@ -209,6 +223,10 @@ public class User implements Identifiable<Long>, UserDetails {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
 	private AccountStatus accountStatus = AccountStatus.PENDING_ACTIVATION;
+
+	@Convert(converter = BooleanToStringConverter.class)
+	@Column(name = "is_recommendation", nullable = false)
+	private Boolean isRecommendation = Boolean.FALSE;
 
 	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "avatar_asset_id")
