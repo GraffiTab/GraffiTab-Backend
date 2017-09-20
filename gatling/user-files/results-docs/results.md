@@ -127,9 +127,6 @@
 ================================================================================
 
 
-
-
-
 ## Cold start of JVM exammple
 
 Server just restarted, no requests at all, timings for Registration:
@@ -152,3 +149,57 @@ Server just restarted, no requests at all, timings for Registration:
 > t > 1200 ms                                           36 ( 24%)
 > failed                                                 0 (  0%)
 ================================================================================
+
+
+## 26th September 2017
+
+### Registration
+
+Ran 5 times, picked quickest (241ms 95th perc)
+
+================================================================================
+---- Global Information --------------------------------------------------------
+> request count                                        150 (OK=150    KO=0     )
+> min response time                                    170 (OK=170    KO=-     )
+> max response time                                    409 (OK=409    KO=-     )
+> mean response time                                   202 (OK=202    KO=-     )
+> std deviation                                         31 (OK=31     KO=-     )
+> response time 50th percentile                        195 (OK=195    KO=-     )
+> response time 75th percentile                        208 (OK=208    KO=-     )
+> response time 95th percentile                        241 (OK=241    KO=-     )
+> response time 99th percentile                        357 (OK=357    KO=-     )
+> mean requests/sec                                  4.839 (OK=4.839  KO=-     )
+---- Response Time Distribution ------------------------------------------------
+> t < 800 ms                                           150 (100%)
+> 800 ms < t < 1200 ms                                   0 (  0%)
+> t > 1200 ms                                            0 (  0%)
+> failed                                                 0 (  0%)
+================================================================================
+
+## LoadAppHome
+
+* Ran 5 times, took mean of 95th percentile:
+
+ 224 237 251 320 718 -> 251ms 95th
+
+
+Quickest:
+
+ ================================================================================
+ ---- Global Information --------------------------------------------------------
+ > request count                                       1050 (OK=1050   KO=0     )
+ > min response time                                     19 (OK=19     KO=-     )
+ > max response time                                   1479 (OK=1479   KO=-     )
+ > mean response time                                    70 (OK=70     KO=-     )
+ > std deviation                                        136 (OK=136    KO=-     )
+ > response time 50th percentile                         31 (OK=31     KO=-     )
+ > response time 75th percentile                         37 (OK=37     KO=-     )
+ > response time 95th percentile                        224 (OK=224    KO=-     )
+ > response time 99th percentile                        975 (OK=975    KO=-     )
+ > mean requests/sec                                 31.818 (OK=31.818 KO=-     )
+ ---- Response Time Distribution ------------------------------------------------
+ > t < 800 ms                                          1038 ( 99%)
+ > 800 ms < t < 1200 ms                                   8 (  1%)
+ > t > 1200 ms                                            4 (  0%)
+ > failed                                                 0 (  0%)
+ ================================================================================

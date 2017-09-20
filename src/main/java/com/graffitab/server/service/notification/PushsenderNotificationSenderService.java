@@ -152,9 +152,15 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 				Comment comment = typedNotification.getMentionedComment();
 				Streamable streamable = typedNotification.getMentionedStreamable();
 
+				//TODO: refactor Notification mention as abstract for post / comment
+				if (comment != null) {
+					metadata.put("mentionedCommentId", comment.getId() + "");
+				} else {
+					metadata.put("mentionedPostId", streamable.getId() + "");
+				}
+
 				metadata.put("mentionerId", user.getId() + "");
 				metadata.put("mentionerName", user.getFirstName() + " " + user.getLastName());
-				metadata.put("mentionedCommentId", comment.getId() + "");
 				metadata.put("mentionedStreamableId", streamable.getId() + "");
 				break;
 			}
@@ -187,7 +193,10 @@ public class PushsenderNotificationSenderService implements NotificationSenderSe
 				NotificationMention typedNotification = ((NotificationMention) notification);
 				User user = typedNotification.getMentioner();
 				Comment comment = typedNotification.getMentionedComment();
-				return user.getFirstName() + " " + user.getLastName() + " mentioned you in a comment: " + comment.getText();
+				String notificationText =  (comment != null && comment.getText() != null) ?
+											" mentioned you in a comment: " + comment.getText() :
+											" mentioned you in a post";
+				return user.getFirstName() + " " + user.getLastName() + notificationText;
 			}
 			default:
 				return "Welcome to GraffiTab!";

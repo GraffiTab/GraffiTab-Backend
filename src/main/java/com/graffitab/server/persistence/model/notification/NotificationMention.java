@@ -14,6 +14,7 @@ import javax.persistence.OneToOne;
 @Getter
 @Setter
 @Entity
+//TODO: create a new class for MENTION_STREAMABLE
 @DiscriminatorValue("MENTION")
 public class NotificationMention extends Notification {
 
