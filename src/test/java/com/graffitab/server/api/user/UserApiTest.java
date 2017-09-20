@@ -737,4 +737,6 @@ public class UserApiTest {
         //TODO: create helper method in activity to check correctness
     }
 
+    //TODO: Unit test for the parseText functionality (TextService)
+
 }

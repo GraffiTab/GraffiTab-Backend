@@ -16,6 +16,7 @@ import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.streamable.StreamableGraffiti;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.ActivityService;
+import com.graffitab.server.service.TextUtilsService;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.asset.AssetService;
 import com.graffitab.server.service.asset.TransferableStream;
@@ -75,6 +76,9 @@ public class StreamableService {
 	private AssetService assetService;
 
 	@Resource
+	private TextUtilsService textUtilsService;
+
+	@Resource
 	private OrikaMapper mapper;
 
 	@Transactional(readOnly = true)
@@ -89,7 +93,7 @@ public class StreamableService {
 	}
 
 	public Streamable createStreamableGraffiti(StreamableGraffitiDto streamableGraffitiDto, TransferableStream transferable, long contentLength) {
-		// TODO: validate text of streamable
+		textUtilsService.validateText(streamableGraffitiDto.getText());
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
 		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
 		Streamable streamable = createStreamableInTransaction(streamableGraffitiDto, assetToAdd);
@@ -119,13 +123,15 @@ public class StreamableService {
 
 		// Add activity to all followers.
 		activityService.addCreateStreamableActivityAsync(streamable.getUser(), streamable);
+		textUtilsService.parseStreamableTextForSpecialSymbols(streamable);
 
 		return streamable;
 	}
 
 	public Streamable editStreamableGraffiti(Long streamableId, StreamableGraffitiDto streamableGraffitiDto,
 											 TransferableStream transferable, long contentLength) {
-		// TODO: validate text of streamable
+
+		textUtilsService.validateText(streamableGraffitiDto.getText());
 		Asset assetToAdd = addStreamableAsset(transferable, contentLength);
 		Runnable deferredAssetProcessingRunnable = assetService.prepareAssetForDeferredProcessing(assetToAdd.getGuid());
 

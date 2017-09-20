@@ -1,15 +1,5 @@
 package com.graffitab.server.service.notification;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.Resource;
-
-import org.hibernate.Query;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.graffitab.server.api.dto.ListItemsResult;
 import com.graffitab.server.api.dto.notification.NotificationDto;
 import com.graffitab.server.api.mapper.OrikaMapper;
@@ -27,8 +17,15 @@ import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
-
 import lombok.extern.log4j.Log4j;
+import org.hibernate.Query;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Log4j
 @Service
@@ -107,6 +104,11 @@ public class NotificationService {
 
 	public void addMentionNotificationAsync(User user, User mentioner, Streamable mentionedStreamable, Comment comment) {
 		Notification notification = new NotificationMention(mentioner, mentionedStreamable, comment);
+		addNotificationToUser(user, notification);
+	}
+
+	public void addMentionNotificationAsync(User user, User mentioner, Streamable mentionedStreamable) {
+		Notification notification = new NotificationMention(mentioner, mentionedStreamable);
 		addNotificationToUser(user, notification);
 	}
 
