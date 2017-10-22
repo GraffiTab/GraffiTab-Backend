@@ -241,8 +241,12 @@ public class UserService {
 					userDao.persist(user);
 				});
 
-				emailService.sendWelcomeEmail(user.getUsername(), user.getEmail(),
-						generateUserAccountActivationLink(userToken, locale.getLanguage()), locale);
+				if (immediateUserActivation) {
+					emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), generateGetStartedLink(locale.getLanguage()), locale);
+				} else {
+					emailService.sendWelcomeEmail(user.getUsername(), user.getEmail(),
+							generateUserAccountActivationLink(userToken, locale.getLanguage()), locale);
+				}
 
 				return user;
 			} else {
