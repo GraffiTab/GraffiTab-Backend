@@ -28,14 +28,16 @@ import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.util.GPSUtils;
 import com.graffitab.server.util.GuidGenerator;
+
 import org.hibernate.Query;
 import org.javatuples.Pair;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Locale;
+
+import javax.annotation.Resource;
 
 @Service
 public class StreamableService {
@@ -232,7 +234,7 @@ public class StreamableService {
 
 		// Add notification to the owner of the streamable.
 		if (liked && !streamable.getUser().equals(currentUser)) {
-			notificationService.addLikeNotificationAsync(streamable.getUser(), currentUser, streamable);
+			notificationService.addLikeNotification(streamable.getUser(), currentUser, streamable, false);
 		}
 
 		if (liked) {

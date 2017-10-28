@@ -14,7 +14,7 @@ import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.notification.NotificationService;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
-import lombok.extern.log4j.Log4j;
+
 import org.hibernate.Query;
 import org.javatuples.Pair;
 import org.joda.time.DateTime;
@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+
+import lombok.extern.log4j.Log4j;
 
 @Log4j
 @Service
@@ -84,7 +86,7 @@ public class CommentService {
 
         // Add notification to the owner of the streamable.
         if (!streamable.getUser().equals(comment.getUser())) {
-            notificationService.addCommentNotificationAsync(streamable.getUser(), comment.getUser(), streamable, comment);
+            notificationService.addCommentNotification(streamable.getUser(), comment.getUser(), streamable, comment, false);
         }
 
         // Process comment for hashtags and mentions.

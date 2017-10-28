@@ -5,19 +5,21 @@ import com.graffitab.server.api.errors.ResultCode;
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.service.job.JobService;
 import com.graffitab.server.service.notification.NotificationService;
 import com.graffitab.server.service.streamable.StreamableService;
 import com.graffitab.server.service.user.RunAsUser;
 import com.graffitab.server.service.user.UserService;
-import lombok.extern.log4j.Log4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+
+import lombok.extern.log4j.Log4j;
 
 /**
  * Created by david on 20/09/2017.
@@ -41,26 +43,25 @@ public class TextUtilsService {
     @Resource
     private TransactionUtils transactionUtils;
 
-    private ExecutorService executor = Executors.newFixedThreadPool(2);
+    @Resource
+    private JobService jobService;
 
     public void parseCommentForSpecialSymbols(Comment comment, Streamable streamable) {
         User currentUser = userService.getCurrentUser();
-        executor.submit(() -> {
+        jobService.execute(() -> {
             parseText(currentUser, comment.getText(), streamable, comment);
         });
     }
 
     public void parseStreamableTextForSpecialSymbols(Streamable streamable) {
         User currentUser = userService.getCurrentUser();
-        executor.submit(() -> {
+        jobService.execute(() -> {
             parseText(currentUser, streamable.getText(), streamable, null);
         });
     }
 
     private void parseText(User currentUser, String text, Streamable streamable, Comment comment) {
-
         try {
-
             RunAsUser.set(currentUser);
 
             Matcher mentionMatcher = MENTION_PATTERN.matcher(text);
@@ -77,9 +78,9 @@ public class TextUtilsService {
                         if (!foundUser.equals(currentUser)) { // User can mention himself without notifications.
 
                             if (comment != null) {
-                                notificationService.addMentionNotificationAsync(foundUser, currentUser, streamable, comment);
+                                notificationService.addMentionNotification(foundUser, currentUser, streamable, comment, true);
                             } else {
-                                notificationService.addMentionNotificationAsync(foundUser, currentUser, streamable);
+                                notificationService.addMentionNotification(foundUser, currentUser, streamable, true);
                             }
                         }
                     } else if (log.isDebugEnabled()) {

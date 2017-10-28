@@ -29,7 +29,7 @@ import com.graffitab.server.service.social.SocialNetworksService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
 import com.graffitab.server.util.PasswordGenerator;
-import lombok.extern.log4j.Log4j2;
+
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -44,10 +44,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Created by david
@@ -212,7 +215,7 @@ public class UserService {
 		});
 
 		// Add notification to the activated user.
-		notificationService.addWelcomeNotificationAsync(user);
+		notificationService.addWelcomeNotification(user, false);
 
 		return user;
 	}
@@ -277,7 +280,7 @@ public class UserService {
 						emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), generateGetStartedLink(locale.getLanguage()), locale);
 
 						// Add notification to the new user.
-						notificationService.addWelcomeNotificationAsync(user);
+						notificationService.addWelcomeNotification(user, false);
 
 						return user;
 					}
@@ -479,7 +482,7 @@ public class UserService {
 
 		// Add notification to the followed user if they have been followed.
 		if (followed) {
-			notificationService.addFollowNotificationAsync(followedUser, currentUser);
+			notificationService.addFollowNotification(followedUser, currentUser, false);
 
 			// Add activity to each follower of the user.
 			activityService.addFollowActivityAsync(currentUser, followedUser);

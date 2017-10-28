@@ -1,16 +1,5 @@
 package com.graffitab.server.service;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.hibernate.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.graffitab.server.api.dto.ListItemsResult;
 import com.graffitab.server.api.dto.activity.ActivityContainerDto;
 import com.graffitab.server.api.dto.streamable.FullStreamableDto;
@@ -24,9 +13,18 @@ import com.graffitab.server.persistence.model.activity.ActivityFollow;
 import com.graffitab.server.persistence.model.activity.ActivityLike;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.service.job.JobService;
 import com.graffitab.server.service.paging.ActivityPagingService;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
+
+import org.hibernate.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.log4j.Log4j;
 
@@ -55,7 +53,8 @@ public class ActivityService {
 	@Autowired
 	private HttpServletRequest request;
 
-	private ExecutorService executor = Executors.newFixedThreadPool(2);
+	@Resource
+	private JobService jobService;
 
 	@Transactional(readOnly = true)
 	public ListItemsResult<FullStreamableDto> getUserFeedResult(Integer offset, Integer limit) {
@@ -109,7 +108,7 @@ public class ActivityService {
 		activity.setUserAgent(userAgent);
 		activity.setIpAddress(ipAddress);
 
-		executor.submit(() -> {
+		jobService.execute(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("About to add activity " + activity + " to user " + currentUser);
 			}

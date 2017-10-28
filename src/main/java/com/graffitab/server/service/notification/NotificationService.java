@@ -15,17 +15,19 @@ import com.graffitab.server.persistence.model.notification.NotificationWelcome;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.service.TransactionUtils;
+import com.graffitab.server.service.job.JobService;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
-import lombok.extern.log4j.Log4j;
+
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import javax.annotation.Resource;
+
+import lombok.extern.log4j.Log4j;
 
 @Log4j
 @Service
@@ -49,7 +51,13 @@ public class NotificationService {
 	@Resource
 	private TransactionUtils transactionUtils;
 
-	private ExecutorService executor = Executors.newFixedThreadPool(2);
+	@Resource
+	private JobService jobService;
+
+    @Transactional(readOnly = true)
+    public Notification findNotificationById(Long id) {
+        return notificationDao.find(id);
+    }
 
 	public ListItemsResult<NotificationDto> getNotificationsResult(Integer offset, Integer limit) {
 		// Get original notifications.
@@ -82,73 +90,118 @@ public class NotificationService {
 		return (Long) query.uniqueResult();
 	}
 
-	public void addWelcomeNotificationAsync(User user) {
+	public void addWelcomeNotification(User user,
+                                       boolean synchronous) {
 		Notification notification = new NotificationWelcome();
-		addNotificationToUser(user, notification);
+		addNotificationToUser(user, notification, synchronous);
 	}
 
-	public void addFollowNotificationAsync(User user, User follower) {
+	public void addFollowNotification(User user,
+                                      User follower,
+                                      boolean synchronous) {
 		Notification notification = new NotificationFollow(follower);
-		addNotificationToUser(user, notification);
+		addNotificationToUser(user, notification, synchronous);
 	}
 
-	public void addLikeNotificationAsync(User user, User liker, Streamable likedStreamable) {
+	public void addLikeNotification(User user,
+                                    User liker,
+                                    Streamable likedStreamable,
+                                    boolean synchronous) {
 		Notification notification = new NotificationLike(liker, likedStreamable);
-		addNotificationToUser(user, notification);
+		addNotificationToUser(user, notification, synchronous);
 	}
 
-	public void addCommentNotificationAsync(User user, User commenter, Streamable commentedStreamable, Comment comment) {
+	public void addCommentNotification(User user,
+                                       User commenter,
+                                       Streamable commentedStreamable,
+                                       Comment comment,
+                                       boolean synchronous) {
 		Notification notification = new NotificationComment(commenter, commentedStreamable, comment);
-		addNotificationToUser(user, notification);
+		addNotificationToUser(user, notification, synchronous);
 	}
 
-	public void addMentionNotificationAsync(User user, User mentioner, Streamable mentionedStreamable, Comment comment) {
+	public void addMentionNotification(User user,
+                                       User mentioner,
+                                       Streamable mentionedStreamable,
+                                       Comment comment,
+                                       boolean synchronous) {
 		Notification notification = new NotificationMention(mentioner, mentionedStreamable, comment);
-		addNotificationToUser(user, notification);
+		addNotificationToUser(user, notification, synchronous);
 	}
 
-	public void addMentionNotificationAsync(User user, User mentioner, Streamable mentionedStreamable) {
+	public void addMentionNotification(User user,
+                                       User mentioner,
+                                       Streamable mentionedStreamable,
+                                       boolean synchronous) {
 		Notification notification = new NotificationMention(mentioner, mentionedStreamable);
-		addNotificationToUser(user, notification);
+		addNotificationToUser(user, notification, synchronous);
 	}
 
-	private void markNotificationsAsRead(List<Notification> notifications) {
-		executor.submit(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("About to mark " + notifications.size() + " notifications as read");
-			}
+	private void addNotificationToUser(User receiver,
+                                       Notification notification,
+                                       boolean synchronous) {
+		Runnable runnable = () -> {
+            if (log.isDebugEnabled()) {
+                log.debug("About to add notification " + notification + " to user " + receiver);
+            }
 
-			notifications.forEach(notification -> {
-				transactionUtils.executeInTransaction(() -> {
-					notification.setIsRead(true);
-					notificationDao.merge(notification);
-				});
-			});
+            // Add notification to receiver.
+            transactionUtils.executeInTransaction(() -> {
+                User inner = userService.findUserById(receiver.getId());
+                inner.getNotifications().add(notification);
+            });
 
-			if (log.isDebugEnabled()) {
-				log.debug("Finished marking notifications as unread");
-			}
-		});
+            // Send push notification to receiver.
+            notificationSenderService.sendNotification(receiver, notification);
+
+            if (log.isDebugEnabled()) {
+                log.debug("Finished adding notification");
+            }
+        };
+		if (!synchronous) {
+            jobService.execute(runnable);
+        } else {
+		    runnable.run();
+        }
 	}
 
-	private void addNotificationToUser(User receiver, Notification notification) {
-		executor.submit(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("About to add notification " + notification + " to user " + receiver);
-			}
+    private void markNotificationsAsRead(List<Notification> notifications) {
+        if (unreadNotificationsExist(notifications)) {
+            // Mark notifications as unread only if there are unread notifications in this list.
+            jobService.execute(() -> {
+                if (log.isDebugEnabled()) {
+                    log.debug("About to check " + notifications.size() + " notifications");
+                }
 
-			// Add notification to receiver.
-			transactionUtils.executeInTransaction(() -> {
-				User inner = userService.findUserById(receiver.getId());
-				inner.getNotifications().add(notification);
-			});
+                int markedCount = 0;
+                for (Notification notification : notifications) {
+                    if (!notification.getIsRead()) {
+                        // Process only unread notifications.
+                        if (log.isDebugEnabled()) {
+                            log.debug("Marking notification id=" + notification.getId() + " as read");
+                        }
+                        transactionUtils.executeInTransaction(() -> {
+                            Notification inner = findNotificationById(notification.getId());
+                            inner.setIsRead(true);
+                        });
+                        markedCount++;
+                    }
+                }
 
-			// Send push notification to receiver.
-			notificationSenderService.sendNotification(receiver, notification);
+                if (log.isDebugEnabled()) {
+                    log.debug("Finished marking " + markedCount + " notifications as read");
+                }
+            });
+        } else if (log.isDebugEnabled()) {
+            log.debug("No unread notifications to mark. Nothing to do");
+        }
+    }
 
-			if (log.isDebugEnabled()) {
-				log.debug("Finished adding notification");
-			}
-		});
-	}
+	private boolean unreadNotificationsExist(List<Notification> notifications) {
+        for (Notification notification : notifications) {
+            if (!notification.getIsRead())
+                return true;
+        }
+        return false;
+    }
 }
