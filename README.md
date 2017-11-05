@@ -1,4 +1,4 @@
-<img src="https://drive.google.com/uc?export=download&id=0B8cKnJyOSiKfQkw5c0dWUVppaUU" width="1500">
+<img src="https://drive.google.com/uc?authuser=0&id=19e9OtIDOui7171wgZxvpBcnHbIaxPlRE&export=download" width="4000">
 
 The GraffiTab application lets you create and share drawings with your audience. Follow your favourite artists, be creative and build your profile.
 
