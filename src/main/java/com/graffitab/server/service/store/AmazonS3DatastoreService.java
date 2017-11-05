@@ -1,17 +1,5 @@
 package com.graffitab.server.service.store;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -21,6 +9,19 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.graffitab.server.service.TransactionUtils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.util.StringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 @Service
 public class AmazonS3DatastoreService implements DatastoreService {
@@ -70,6 +71,7 @@ public class AmazonS3DatastoreService implements DatastoreService {
 
 		ObjectMetadata requestMetadata = new ObjectMetadata();
 		requestMetadata.setContentLength(contentLength);
+		requestMetadata.setContentType(MimeTypeUtils.IMAGE_JPEG_VALUE);
 
 		PutObjectRequest putRequest = new PutObjectRequest(bucketName, key, inputStream, requestMetadata).withCannedAcl(CannedAccessControlList.PublicRead);
 		PutObjectResult result = amazonS3Client.putObject(putRequest);
@@ -104,7 +106,7 @@ public class AmazonS3DatastoreService implements DatastoreService {
 	}
 
 	private static String generateKey(String assetGuid) {
-		return ASSETS_ROOT_KEY + "/" + assetGuid;
+		return ASSETS_ROOT_KEY + "/" + assetGuid + ".jpg";
 	}
 
 	@SuppressWarnings("unused")
