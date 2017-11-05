@@ -106,7 +106,7 @@ public class AmazonS3DatastoreService implements DatastoreService {
 	}
 
 	private static String generateKey(String assetGuid) {
-		return ASSETS_ROOT_KEY + "/" + assetGuid + ".jpg";
+		return ASSETS_ROOT_KEY + "/" + assetGuid;
 	}
 
 	@SuppressWarnings("unused")
