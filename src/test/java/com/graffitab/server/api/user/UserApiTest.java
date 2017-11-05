@@ -19,7 +19,7 @@ import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.test.api.TestDatabaseConfig;
 import com.graffitab.server.util.GuidGenerator;
 import com.jayway.jsonpath.JsonPath;
-import lombok.Data;
+
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
@@ -48,6 +48,13 @@ import org.springframework.web.context.WebApplicationContext;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.annotation.Resource;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -56,12 +63,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.Filter;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.Data;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -738,5 +741,4 @@ public class UserApiTest {
     }
 
     //TODO: Unit test for the parseText functionality (TextService)
-
 }
