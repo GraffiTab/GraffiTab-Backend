@@ -1,14 +1,16 @@
 package com.graffitab.server.persistence.model.notification;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
 
 @Getter
 @Setter
 @Entity
+@Builder
 @DiscriminatorValue("WELCOME")
 public class NotificationWelcome extends Notification {
 

@@ -28,16 +28,14 @@ import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.util.GPSUtils;
 import com.graffitab.server.util.GuidGenerator;
-
 import org.hibernate.Query;
 import org.javatuples.Pair;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
-
 import javax.annotation.Resource;
+import java.util.Locale;
 
 @Service
 public class StreamableService {
@@ -439,20 +437,5 @@ public class StreamableService {
 	@Transactional(readOnly = true)
 	public Streamable findStreamableById(Long id) {
 		return streamableDao.find(id);
-	}
-
-	@Transactional
-	public void processStreamableStats(Streamable streamable, FullStreamableDto streamableDto) {
-		Query query = streamableDao.createNamedQuery("Streamable.stats");
-		query.setParameter("currentUser", userService.getCurrentUser());
-		query.setParameter("streamable", streamable);
-		Object[] result = (Object[]) query.uniqueResult();
-
-		streamableDto.setCommentsCount((Long) result[0]);
-		streamableDto.setLikersCount((Integer) result[1]);
-
-		Long likedByCurrentUserInt = (Long) result[2];
-		streamableDto.setLikedByCurrentUser(likedByCurrentUserInt == 1);
-
 	}
 }
