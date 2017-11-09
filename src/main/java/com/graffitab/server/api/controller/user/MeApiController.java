@@ -488,4 +488,14 @@ public class MeApiController {
 												@RequestParam(value="limit", required = false) Integer limit) {
 		return userService.findRecommendedUsersToFollow(offset, limit);
 	}
+
+	@RequestMapping(value = {"/notifications/readall"}, method = RequestMethod.PUT)
+	@Transactional(readOnly = true)
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public  ActionCompletedResult readAllNotifications() {
+		CountResult countResult = new CountResult();
+		Long count = notificationService.getUnreadNotificationsCount();
+		countResult.setCount(count);
+		return new ActionCompletedResult();
+	}
 }

@@ -18,16 +18,13 @@ import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.job.JobService;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
-
+import lombok.extern.log4j.Log4j;
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import javax.annotation.Resource;
-
-import lombok.extern.log4j.Log4j;
+import java.util.List;
 
 @Log4j
 @Service
@@ -204,4 +201,16 @@ public class NotificationService {
         }
         return false;
     }
+	
+	public void markAllNotificationsAsReadForCurrentUser() {
+		//TODO:
+		// Get current user
+		// Update all notifications in DB (in the last month) to READ
+		// return
+	}
+
+	public void markNotificationAsRead(Long notificationId) {
+		//TODO:
+		// update the notification to READ for the current user
+	}
 }

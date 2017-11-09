@@ -1,5 +1,15 @@
 package com.graffitab.server.persistence.model.notification;
 
+import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.util.BooleanToStringConverter;
+import com.graffitab.server.persistence.util.DateTimeToLongConverter;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+import org.joda.time.DateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -14,18 +24,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
-import org.joda.time.DateTime;
-
-import com.graffitab.server.persistence.dao.Identifiable;
-import com.graffitab.server.persistence.util.BooleanToStringConverter;
-import com.graffitab.server.persistence.util.DateTimeToLongConverter;
-
+//TODO: return only the notifications in the last month or so
 @NamedQueries({
 	@NamedQuery(
 		name = "Notification.getNotifications",
