@@ -112,8 +112,8 @@ public class MeApiController {
 	@RequestMapping(value = {"/notifications"}, method = RequestMethod.GET)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<NotificationDto> getNotifications(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return notificationService.getNotificationsResult(offset, limit);
 	}
 
@@ -127,7 +127,7 @@ public class MeApiController {
 		return countResult;
 	}
 
-	@RequestMapping(value = {""}, method = RequestMethod.PUT, consumes={"application/json"})
+	@RequestMapping(value = {""}, method = RequestMethod.PUT, consumes = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult edit(@JsonProperty("user") UserDto userDto) {
@@ -229,8 +229,8 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<LocationDto> getLocations(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return locationService.getLocationsResult(offset, limit);
 	}
 
@@ -282,8 +282,8 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> getFollowers(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return userService.getFollowingOrFollowersForUserResult(true, null, offset, limit);
 	}
 
@@ -291,9 +291,9 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<ActivityContainerDto> getFollowersActivity(
-			@RequestParam(value="numberOfItemsInGroup", required = false) Integer numberOfItemsInGroup,
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "numberOfItemsInGroup", required = false) Integer numberOfItemsInGroup,
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return activityService.getFollowersActivityResult(numberOfItemsInGroup, offset, limit);
 	}
 
@@ -301,12 +301,12 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> getFollowing(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return userService.getFollowingOrFollowersForUserResult(false, null, offset, limit);
 	}
 
-	@RequestMapping(value = "/streamables/graffiti/import",method = RequestMethod.POST)
+	@RequestMapping(value = "/streamables/graffiti/import", method = RequestMethod.POST)
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateStreamableResult importGraffiti(@RequestBody StreamableGraffitiDto streamableDto) {
@@ -372,7 +372,7 @@ public class MeApiController {
 			CreateStreamableResult addStreamableResult = new CreateStreamableResult();
 			TransferableStream transferableStream = new MultipartFileTransferableStream(file);
 			Streamable streamable = streamableService.editStreamableGraffiti(streamableId, streamableDto, transferableStream,
-									file.getSize());
+					file.getSize());
 			addStreamableResult.setStreamable(mapper.map(streamable, FullStreamableDto.class));
 			return addStreamableResult;
 		} catch (Exception e) {
@@ -393,8 +393,8 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getStreamables(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return streamableService.getUserStreamablesResult(userService.getCurrentUser().getId(), offset, limit);
 	}
 
@@ -422,8 +422,8 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getPrivateStreamables(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return streamableService.getPrivateStreamablesResult(offset, limit);
 	}
 
@@ -431,8 +431,8 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getFeed(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return activityService.getUserFeedResult(offset, limit);
 	}
 
@@ -440,16 +440,16 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getLikedStreamablesForUser(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return streamableService.getLikedStreamablesForUserResult(userService.getCurrentUser().getId(), offset, limit);
 	}
 
 	@RequestMapping(value = {"/social/friends"}, method = RequestMethod.GET)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserSocialFriendsContainerDto> getSocialFriends(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return userService.getSocialFriendsResult(offset, limit);
 	}
 
@@ -457,8 +457,8 @@ public class MeApiController {
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public UserSocialFriendsContainerDto getSocialFriends(
 			@PathVariable("type") ExternalProviderType type,
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		UserSocialFriendsContainer container = userService.getSocialFriendsForProviderResult(type, offset, limit);
 		return mapper.map(container, UserSocialFriendsContainerDto.class);
 	}
@@ -476,16 +476,30 @@ public class MeApiController {
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getMentions(
-			@RequestParam(value="offset", required = false) Integer offset,
-			@RequestParam(value="limit", required = false) Integer limit) {
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit) {
 		return streamableService.getUserMentionsResult(userService.getCurrentUser().getId(), offset, limit);
 	}
 
 	@RequestMapping(value = {"/whotofollow"}, method = RequestMethod.GET)
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
-	public ListItemsResult<UserDto> whoToFollow(@RequestParam(value="offset", required = false) Integer offset,
-												@RequestParam(value="limit", required = false) Integer limit) {
+	public ListItemsResult<UserDto> whoToFollow(@RequestParam(value = "offset", required = false) Integer offset,
+												@RequestParam(value = "limit", required = false) Integer limit) {
 		return userService.findRecommendedUsersToFollow(offset, limit);
+	}
+
+	@RequestMapping(value = {"/notifications/readall"}, method = RequestMethod.PUT)
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public ActionCompletedResult readAllNotifications() {
+		notificationService.markAllNotificationsAsReadForCurrentUser();
+		return new ActionCompletedResult();
+	}
+
+	@RequestMapping(value = {"/notifications/{id}/read"}, method = RequestMethod.PUT)
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public ActionCompletedResult readSingleNotification(@PathVariable("id") Long id) {
+		notificationService.markNotificationAsRead(id);
+		return new ActionCompletedResult();
 	}
 }
