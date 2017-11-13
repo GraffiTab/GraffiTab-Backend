@@ -10,14 +10,15 @@ import com.graffitab.server.service.image.ImageSizes;
 import com.graffitab.server.service.image.ImageUtilsService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,24 +34,17 @@ import java.util.concurrent.Executors;
 @Service
 public class AssetService {
 
-    @Resource
     private DatastoreService datastoreService;
-
-    @Resource
     private HibernateDaoImpl<Asset, Long> assetDao;
-
-    @Resource
     private TransactionUtils transactionUtils;
-
-    @Resource
     private ImageUtilsService imageUtilsService;
 
     private ExecutorService assetOperationsExecutor = Executors.newFixedThreadPool(4);
-
     private Map<String, String> newAssetGuidToPreviousAssetGuidMap = new ConcurrentHashMap<>();
 
+    @NonNull
     @Value("${filesystem.tempDir:/tmp}")
-    private String FILE_SYSTEM_TEMP_ROOT;
+    public String FILE_SYSTEM_TEMP_ROOT;
 
     @PostConstruct
     public void init() {
@@ -62,6 +56,15 @@ public class AssetService {
         if (log.isDebugEnabled()) {
             log.debug("Temporary filesystem root is " + FILE_SYSTEM_TEMP_ROOT);
         }
+    }
+
+    @Autowired
+    public AssetService(DatastoreService datastoreService, ImageUtilsService imageUtilsService,
+                        HibernateDaoImpl<Asset, Long> assetDao, TransactionUtils transactionUtils) {
+        this.datastoreService = datastoreService;
+        this.imageUtilsService = imageUtilsService;
+        this.transactionUtils = transactionUtils;
+        this.assetDao = assetDao;
     }
 
     @Transactional(readOnly = true)
@@ -82,7 +85,7 @@ public class AssetService {
     }
 
     private File transferAssetToTemporaryArea(TransferableStream transferableAsset, String assetGuid) {
-        File tempFile = getTemporaryFile(assetGuid);
+        File tempFile = imageUtilsService.getTemporaryFile(assetGuid);
 
         if (log.isDebugEnabled()) {
             log.debug("Transferring multipart file to temporary store {}", tempFile.getAbsolutePath());
@@ -103,14 +106,6 @@ public class AssetService {
             log.error("General error transferring file", e);
             throw new RestApiException(ResultCode.GENERAL_ERROR, "Cannot transfer to temporary file");
         }
-    }
-
-    public File getTemporaryFile(String temporaryFilename) {
-        return new File(FILE_SYSTEM_TEMP_ROOT + File.separatorChar + temporaryFilename);
-    }
-
-    public String getTemporaryFilePath(String temporaryFilename) {
-        return FILE_SYSTEM_TEMP_ROOT + File.separatorChar + temporaryFilename;
     }
 
     public void addPreviousAssetGuidMapping(String newAssetGuid, String previousAssetGuid) {

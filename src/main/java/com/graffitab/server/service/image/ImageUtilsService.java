@@ -1,29 +1,29 @@
 package com.graffitab.server.service.image;
 
 import com.graffitab.server.api.errors.RestApiException;
-import com.graffitab.server.service.asset.AssetService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
 import com.mortennobel.imagescaling.MultiStepRescaleOp;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 @Log4j2
 public class ImageUtilsService {
 
-	@Resource
 	private DatastoreService datastoreService;
-
-	@Resource
-	private AssetService assetService;
 
 	private static Integer STANDARD_IMG_WIDTH = 1024;
 	private static Integer STANDARD_IMG_HEIGHT = 768;
@@ -35,6 +35,22 @@ public class ImageUtilsService {
 
 	public static final String ASSET_THUMBNAIL_SUFFIX = "_thumb";
 
+	@Value("${filesystem.tempDir:/tmp}")
+	public String FILE_SYSTEM_TEMP_ROOT;
+
+	@Autowired
+	public ImageUtilsService(DatastoreService datastoreService) {
+		this.datastoreService = datastoreService;
+	}
+
+	public File getTemporaryFile(String temporaryFilename) {
+		return new File(FILE_SYSTEM_TEMP_ROOT + File.separatorChar + temporaryFilename);
+	}
+
+	public String getTemporaryFilePath(String temporaryFilename) {
+		return FILE_SYSTEM_TEMP_ROOT + File.separatorChar + temporaryFilename;
+	}
+
 	public ImageSizes generateAndUploadImagesForAsset(String assetGuid) {
 
 		File imageTempFile;
@@ -45,7 +61,7 @@ public class ImageUtilsService {
 
 		try {
 
-			imageTempFile = assetService.getTemporaryFile(assetGuid);
+			imageTempFile = getTemporaryFile(assetGuid);
 
 			standardImage = generateScaledImage(imageTempFile, STANDARD_IMG_WIDTH, STANDARD_IMG_HEIGHT, "");
 			standardImageSize = standardImage.getScaledImage().length();
@@ -99,7 +115,7 @@ public class ImageUtilsService {
 
 	private ScaledImage generateScaledImage(File originalImageTempFile, Integer width, Integer height, String suffix) throws IOException {
 		FileInputStream fis = new FileInputStream(originalImageTempFile);
-		String imageFileName = assetService.getTemporaryFilePath(
+		String imageFileName = getTemporaryFilePath(
 				GuidGenerator.generate() +
 				((suffix != null && StringUtils.hasText(suffix)) ? "_" + suffix : ""));
 		return scaleImage(originalImageTempFile, fis, width, height, imageFileName);

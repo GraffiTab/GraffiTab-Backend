@@ -1,6 +1,6 @@
 # General deployment documentation for Digital Ocean
 
-The service deployment consists of:
+The com.graffitab.server.service deployment consists of:
 
 - 1 droplet for the load balancer (HAProxy): `devlb.graffitab.com`
 - 2 droplets for the app (Java fatJars): `dev01.graffitab.com`, `dev02.graffitab.com`

@@ -104,9 +104,9 @@ listen stats
 
 ### Start up
 
-To start the service:
+To start the com.graffitab.server.service:
 ```
-service haproxy start
+com.graffitab.server.service haproxy start
 ```
 
 To view the logs:
@@ -142,7 +142,7 @@ $ cat dev_graffitab_com.ca-bundle >> dev.graffitab.com.pem
 $ cp dev.graffitab.com.pem /etc/ssl/private
 
 # Restart HAproxy
-$ sudo service haproxy restart
+$ sudo com.graffitab.server.service haproxy restart
 ```
 
 * Store all the `.pem`,`.crt`,`.key` in a safe place

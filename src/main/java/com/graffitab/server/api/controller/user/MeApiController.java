@@ -498,4 +498,11 @@ public class MeApiController {
 		countResult.setCount(count);
 		return new ActionCompletedResult();
 	}
+
+	@RequestMapping(value = {"/notifications/{id}/read"}, method = RequestMethod.PUT)
+	@Transactional(readOnly = true)
+	@UserStatusRequired(value = AccountStatus.ACTIVE)
+	public  ActionCompletedResult read(@PathVariable("id") Long notificationId) {
+		return new ActionCompletedResult();
+	}
 }

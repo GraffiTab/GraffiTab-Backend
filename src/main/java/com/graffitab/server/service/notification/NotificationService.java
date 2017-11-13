@@ -18,37 +18,31 @@ import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.job.JobService;
 import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Log4j
 @Service
+@AllArgsConstructor
 public class NotificationService {
 
-	@Resource
 	private UserService userService;
 
-	@Resource
 	private PagingService pagingService;
 
-	@Resource
 	private HibernateDaoImpl<Notification, Long> notificationDao;
 
-	@Resource
 	private NotificationSenderService notificationSenderService;
 
-	@Resource
 	private OrikaMapper mapper;
 
-	@Resource
 	private TransactionUtils transactionUtils;
 
-	@Resource
 	private JobService jobService;
 
     @Transactional(readOnly = true)
@@ -71,7 +65,7 @@ public class NotificationService {
 		ListItemsResult<NotificationDto> mappedList = pagingService.mapResults(notifications, NotificationDto.class);
 
 		// Mark retrieved notifications as read.
-		markNotificationsAsRead(notifications);
+		//markNotificationsAsRead(notifications);
 
 		// Return original list of unread notifications.
 		return mappedList;

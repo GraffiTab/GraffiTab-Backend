@@ -1,16 +1,14 @@
 package com.graffitab.server.service.paging;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
+import com.graffitab.server.api.dto.ListItemsResult;
+import com.graffitab.server.api.mapper.OrikaMapper;
+import com.graffitab.server.persistence.model.PagedList;
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.graffitab.server.api.dto.ListItemsResult;
-import com.graffitab.server.api.mapper.OrikaMapper;
-import com.graffitab.server.persistence.model.PagedList;
+import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class PagingService {
@@ -44,6 +42,7 @@ public class PagingService {
 
 		return new PagedList<>((List<T>) query.list(), offset, limit);
 	}
+
 
 	public <T, K> ListItemsResult<K> mapResults(PagedList<T> items, Class<K> targetDtoClass) {
 		// Map to list of DTOs.

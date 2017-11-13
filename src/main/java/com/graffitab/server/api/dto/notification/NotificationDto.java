@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 @JsonInclude(Include.NON_NULL)
 public class NotificationDto {
-
+	private Long id;
 	private Boolean isRead;
 
 	@JsonProperty("date")

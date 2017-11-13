@@ -91,17 +91,17 @@ apt-get install redis-tools
 * How to use Redis brief tutorial [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-redis)
 
 The current configuration file with placeholders is provided in `redis.conf`. This file should be placed
-in `/etc/redis/redis.conf`, which is read by the main service script, under `/etc/init.d/redis-server`.
-Redis should be started as a regular service:
+in `/etc/redis/redis.conf`, which is read by the main com.graffitab.server.service script, under `/etc/init.d/redis-server`.
+Redis should be started as a regular com.graffitab.server.service:
 
 ```
-$ service redis-server start
+$ com.graffitab.server.service redis-server start
 ```
 
 To test that the installation was correct:
 ```
 # Start up redis
-$ service redis-server start | status | stop
+$ com.graffitab.server.service redis-server start | status | stop
 
 # This should give error as we are securing it
 $ redis-cli keys '*'

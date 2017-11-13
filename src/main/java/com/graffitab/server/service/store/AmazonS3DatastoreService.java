@@ -8,8 +8,6 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
-import com.graffitab.server.service.TransactionUtils;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 @Service
 public class AmazonS3DatastoreService implements DatastoreService {
@@ -37,9 +33,6 @@ public class AmazonS3DatastoreService implements DatastoreService {
 	private String AWS_KEY_ENVVAR_NAME = "AWS_ACCESS_KEY";
 
 	private AmazonS3 amazonS3Client;
-
-	@Resource
-	private TransactionUtils transactionUtils;
 
 	@PostConstruct
 	public void setupClient() {

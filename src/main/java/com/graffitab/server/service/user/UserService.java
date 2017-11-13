@@ -126,6 +126,10 @@ public class UserService {
 		return user;
 	}
 
+	public String encodePassword(String password) {
+		return passwordEncoder.encode(password);
+	}
+
 	public User getCurrentUser() {
 
 		if (RunAsUser.get() != null) {
