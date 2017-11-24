@@ -1,19 +1,5 @@
 package com.graffitab.server.api.controller.user;
 
-import java.util.Locale;
-
-import javax.annotation.Resource;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.graffitab.server.api.controller.BaseApiController;
 import com.graffitab.server.api.dto.ActionCompletedResult;
@@ -30,6 +16,20 @@ import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.service.TransactionUtils;
 import com.graffitab.server.service.streamable.StreamableService;
 import com.graffitab.server.service.user.UserService;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Locale;
+
+import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/api/users")
@@ -49,7 +49,6 @@ public class UserApiController extends BaseApiController {
 
 	@RequestMapping(value = {""}, method = RequestMethod.POST, consumes={"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
-	@Transactional
 	public ActionCompletedResult createUser(@JsonProperty("user") UserDto userDto, Locale locale) {
 		userService.createUser(mapper.map(userDto, User.class), locale);
 		return new ActionCompletedResult();
