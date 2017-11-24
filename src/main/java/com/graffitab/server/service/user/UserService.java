@@ -29,7 +29,7 @@ import com.graffitab.server.service.social.SocialNetworksService;
 import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.util.GuidGenerator;
 import com.graffitab.server.util.PasswordGenerator;
-import lombok.extern.log4j.Log4j2;
+
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -44,10 +44,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Created by david
@@ -222,7 +225,7 @@ public class UserService {
 			if (user.getId() == null) {
 				String userToken = GuidGenerator.generate();
 
-				transactionUtils.executeInTransaction(() -> {
+				User persistedUser = transactionUtils.executeInTransactionWithResult(() -> {
 					user.setPassword(passwordEncoder.encode(user.getPassword()));
 					user.setGuid(GuidGenerator.generate());
 					user.setCreatedOn(new DateTime());
@@ -235,13 +238,13 @@ public class UserService {
 
 					user.getMetadataItems().put(ACTIVATION_TOKEN_METADATA_KEY, userToken);
 					user.getMetadataItems().put(ACTIVATION_TOKEN_DATE_METADATA_KEY, System.currentTimeMillis() + "");
-					userDao.persist(user);
+					return userDao.persist(user);
 				});
 
 				if (immediateUserActivation) {
 					emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), generateGetStartedLink(locale.getLanguage()), locale);
 					// Add notification to the new user.
-					notificationService.addWelcomeNotification(user, false);
+					notificationService.addWelcomeNotification(persistedUser, false);
 				} else {
 					emailService.sendWelcomeEmail(user.getUsername(), user.getEmail(),
 							generateUserAccountActivationLink(userToken, locale.getLanguage()), locale);
@@ -271,19 +274,19 @@ public class UserService {
 					// Check if access token is valid.
 					if (socialNetworksService.isValidToken(accessToken, externalProviderType)) {
 						// Register user.
-						transactionUtils.executeInTransaction(() -> {
+						User persistedUser = transactionUtils.executeInTransactionWithResult(() -> {
 							user.setGuid(GuidGenerator.generate());
 							user.setAccountStatus(AccountStatus.ACTIVE);
 							user.setCreatedOn(new DateTime());
 							user.getExternalProviders().add(ExternalProvider.provider(externalProviderType, externalUserId, accessToken));
 
-							userDao.persist(user);
+							return userDao.persist(user);
 						});
 
 						emailService.sendWelcomeExternalEmail(user.getUsername(), user.getEmail(), generateGetStartedLink(locale.getLanguage()), locale);
 
 						// Add notification to the new user.
-						notificationService.addWelcomeNotification(user, false);
+						notificationService.addWelcomeNotification(persistedUser, false);
 
 						return user;
 					}
