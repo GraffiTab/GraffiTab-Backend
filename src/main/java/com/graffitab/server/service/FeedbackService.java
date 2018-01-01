@@ -1,12 +1,12 @@
 package com.graffitab.server.service;
 
-import javax.annotation.Resource;
+import com.graffitab.server.service.email.EmailService;
 
 import org.springframework.stereotype.Service;
 
-import com.graffitab.server.service.email.EmailService;
-
 import java.util.Locale;
+
+import javax.annotation.Resource;
 
 @Service
 public class FeedbackService {
@@ -14,7 +14,11 @@ public class FeedbackService {
 	@Resource
 	private EmailService emailService;
 
-	public void sendFeedback(String name, String email, String text, Locale locale) {
-		emailService.sendFeedbackEmail(name, email, text, locale);
+	public void sendFeedback(String name,
+							 String email,
+							 String text,
+							 String subject,
+							 Locale locale) {
+		emailService.sendFeedbackEmail(name, email, text, subject, locale);
 	}
 }

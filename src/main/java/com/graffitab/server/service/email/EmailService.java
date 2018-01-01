@@ -1,5 +1,8 @@
 package com.graffitab.server.service.email;
 
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -7,9 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.Resource;
-
-import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j;
 
@@ -53,13 +53,13 @@ public class EmailService {
 		sendEmailAsync(resetPasswordEmail);
 	}
 
-	public void sendFeedbackEmail(String name, String email, String text, Locale locale) {
+	public void sendFeedbackEmail(String name, String email, String text, String subject, Locale locale) {
 		Map<String,String> data = new HashMap<>();
 		data.put("@username", name);
 		data.put("@email", email);
 		data.put("@feedback", text);
 
-		String feedbackSubject = messageSource.getMessage("email.subject.feedback", null, locale);
+		String feedbackSubject = subject == null ? messageSource.getMessage("email.subject.feedback", null, locale) : subject;
 
 		Email feedbackEmail = Email.feedback(data, feedbackSubject, locale.getLanguage());
 		sendEmailAsync(feedbackEmail);

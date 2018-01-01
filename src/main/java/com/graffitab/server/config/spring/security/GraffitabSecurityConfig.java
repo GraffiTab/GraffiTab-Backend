@@ -1,12 +1,18 @@
 package com.graffitab.server.config.spring.security;
 
-import com.graffitab.server.api.authentication.*;
+import com.graffitab.server.api.authentication.ExternalProviderAuthenticationFilter;
+import com.graffitab.server.api.authentication.JsonAccessDeniedHandler;
+import com.graffitab.server.api.authentication.JsonLoginAuthenticationFilter;
+import com.graffitab.server.api.authentication.OkResponseLogoutHandler;
+import com.graffitab.server.api.authentication.PersistedSessionSecurityContext;
+import com.graffitab.server.api.authentication.ProtocolCheckingFilter;
+import com.graffitab.server.api.authentication.SessionInvalidationFilter;
+import com.graffitab.server.api.authentication.SessionPrecedenceBasicAuthFilter;
+import com.graffitab.server.api.authentication.UsernamePasswordQueryParamsAuthenticationFilter;
+import com.graffitab.server.service.GraffiTabUserDetailsService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.SecurityFilterAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.SpringBootWebSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -26,8 +32,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
-
-import com.graffitab.server.service.GraffiTabUserDetailsService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -134,6 +138,7 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
             http.csrf().disable()
                   .requestMatchers()
                     .antMatchers(HttpMethod.POST, "/api/users", "/api/users/resetpassword", "/api/users/externalproviders", "/api/feedback")
+                    .antMatchers(HttpMethod.OPTIONS, "/api/feedback")
                     .antMatchers(HttpMethod.GET, "/api/users/activate/**", "/api/auth/**")
                     .antMatchers(HttpMethod.PUT, "/api/users/resetpassword/**")
                     .and()

@@ -1,13 +1,12 @@
 function getStarted() {
-	// Get url.
 	var url = window.location.href;
+    var result = window.location.protocol + "//";
+    if (isDebugEnvironment()) {
+      result += "dev.";
+    }
+	document.location = result + "graffitab.com";
+}
 
-	// Build origin url.
-	var arr = url.split("/");
-	var result = arr[0] + "//" + arr[2];
-
-	// Append path.
-	result += '/getstarted';
-	
-	document.location = result;
+function isDebugEnvironment() {
+  return window.location.host.includes("dev");
 }
