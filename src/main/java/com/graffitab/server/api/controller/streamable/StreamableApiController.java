@@ -1,16 +1,5 @@
 package com.graffitab.server.api.controller.streamable;
 
-import java.util.Locale;
-
-import javax.annotation.Resource;
-
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.graffitab.server.api.controller.user.UserStatusRequired;
 import com.graffitab.server.api.dto.ActionCompletedResult;
@@ -26,6 +15,18 @@ import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.model.user.User.AccountStatus;
 import com.graffitab.server.service.streamable.CommentService;
 import com.graffitab.server.service.streamable.StreamableService;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Locale;
+
+import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/api/streamables")
@@ -79,6 +80,7 @@ public class StreamableApiController {
 		return streamableService.getLikersResult(streamableId, offset, limit);
 	}
 
+	@CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
 	@RequestMapping(value = {"/{id}/comments"}, method = RequestMethod.POST)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateCommentResult postComment(

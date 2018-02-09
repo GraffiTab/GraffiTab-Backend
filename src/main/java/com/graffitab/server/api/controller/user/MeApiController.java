@@ -41,11 +41,12 @@ import com.graffitab.server.service.user.DeviceService;
 import com.graffitab.server.service.user.ExternalProviderService;
 import com.graffitab.server.service.user.LocationService;
 import com.graffitab.server.service.user.UserService;
-import lombok.extern.log4j.Log4j2;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,9 +57,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
+
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
@@ -306,6 +310,7 @@ public class MeApiController {
 		return userService.getFollowingOrFollowersForUserResult(false, null, offset, limit);
 	}
 
+    @CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
 	@RequestMapping(value = "/streamables/graffiti/import", method = RequestMethod.POST)
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
@@ -323,6 +328,7 @@ public class MeApiController {
 		}
 	}
 
+	@CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
 	@RequestMapping(value = "/streamables/graffiti", method = RequestMethod.POST)
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
