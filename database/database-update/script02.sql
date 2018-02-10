@@ -26,3 +26,9 @@ update gt_user set is_recommendation='N' where is_recommendation='0'
 
 --changeset david:v200cs08
 alter table streamable add text varchar(5000) DEFAULT NULL;
+
+--changeset georgi:v200cs09
+ALTER TABLE gt_user ADD recommendation_rank int(20) NOT NULL DEFAULT 0;
+
+--changeset georgi:v200cs10
+ALTER TABLE gt_user MODIFY COLUMN recommendation_rank int(20) DEFAULT 0;

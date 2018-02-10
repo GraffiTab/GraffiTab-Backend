@@ -10,16 +10,20 @@ import com.graffitab.server.persistence.model.notification.Notification;
 import com.graffitab.server.persistence.model.streamable.Streamable;
 import com.graffitab.server.persistence.util.BooleanToStringConverter;
 import com.graffitab.server.persistence.util.DateTimeToLongConverter;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
 import org.joda.time.DateTime;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -41,12 +45,11 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Created by david.
@@ -156,18 +159,16 @@ import java.util.Map;
 			  + "where e.externalProviderType = :externalProviderType "
 			  + "and e.externalUserId = :externalUserId"
 	),
-
-//	select id
-//		from gt_user
-//		where is_recommendation = 'Y' and id not in (
-//
-//		select following_id from following where user_id = 5
 	@NamedQuery(
 		name = "User.findWhoToFollow",
 		query = "select u "
 				+ "from User u "
 				+ "where u.isRecommendation = 'Y' "
-				+ "and u.id not in (select f.id from User fu join fu.following f where fu.id = :currentUserId)"
+                + "and u.accountStatus != 'PENDING_ACTIVATION' "
+				+ "and u != :currentUser "
+				+ "and u.id not in (select f.id from User fu join fu.following f where fu.id = :currentUserId) "
+                + "order by u.recommendationRank desc"
+
 	)
 })
 
@@ -232,6 +233,9 @@ public class User implements Identifiable<Long>, UserDetails {
 	@Convert(converter = BooleanToStringConverter.class)
 	@Column(name = "is_recommendation", nullable = false)
 	private Boolean isRecommendation = Boolean.FALSE;
+
+	@Column(name = "recommendation_rank")
+	private Integer recommendationRank;
 
 	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "avatar_asset_id")

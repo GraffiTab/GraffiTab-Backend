@@ -229,7 +229,7 @@ public class UserService {
 					user.setPassword(passwordEncoder.encode(user.getPassword()));
 					user.setGuid(GuidGenerator.generate());
 					user.setCreatedOn(new DateTime());
-
+                    user.setRecommendationRank(0);
 					if (immediateUserActivation) {
 						user.setAccountStatus(AccountStatus.ACTIVE);
 					} else {
@@ -278,6 +278,7 @@ public class UserService {
 							user.setGuid(GuidGenerator.generate());
 							user.setAccountStatus(AccountStatus.ACTIVE);
 							user.setCreatedOn(new DateTime());
+							user.setRecommendationRank(0);
 							user.getExternalProviders().add(ExternalProvider.provider(externalProviderType, externalUserId, accessToken));
 
 							return userDao.persist(user);
@@ -774,6 +775,7 @@ public class UserService {
 	public ListItemsResult<UserDto> findRecommendedUsersToFollow(Integer offset, Integer limit) {
 		User currentUser = getCurrentUser();
 		Query query = userDao.createNamedQuery("User.findWhoToFollow");
+		query.setParameter("currentUser", currentUser);
 		query.setParameter("currentUserId", currentUser.getId());
 		return pagingService.getPagedItems(User.class, UserDto.class, offset, limit, query);
 	}
