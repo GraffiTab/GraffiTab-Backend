@@ -31,8 +31,13 @@ import java.util.Locale;
 
 import javax.annotation.Resource;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import springfox.documentation.annotations.ApiIgnore;
+
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/v1/users")
+@Api(value="Users")
 public class UserApiController extends BaseApiController {
 
 	@Resource
@@ -47,15 +52,17 @@ public class UserApiController extends BaseApiController {
 	@Resource
 	private TransactionUtils transactionUtils;
 
-	@RequestMapping(value = {""}, method = RequestMethod.POST, consumes={"application/json"})
+	@ApiIgnore
+	@RequestMapping(value = {""}, method = RequestMethod.POST, consumes={"application/json"}, produces = {"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
 	public ActionCompletedResult createUser(@JsonProperty("user") UserDto userDto, Locale locale) {
 		userService.createUser(mapper.map(userDto, User.class), locale);
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
+    @ApiOperation(value = "Profile")
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetUserResult getUser(@PathVariable("id") Long id) {
 		GetUserResult getUserResult = new GetUserResult();
@@ -64,9 +71,10 @@ public class UserApiController extends BaseApiController {
 		return getUserResult;
 	}
 
-	@RequestMapping(value = {"/{id}/profile"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/{id}/profile"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Full Profile")
 	public GetFullUserResult getUserProfile(@PathVariable("id") Long id) {
 		GetFullUserResult getFullUserResult = new GetFullUserResult();
 		User user = userService.getUser(id);
@@ -74,9 +82,10 @@ public class UserApiController extends BaseApiController {
 		return getFullUserResult;
 	}
 
-	@RequestMapping(value = "/username/{username}", method = RequestMethod.GET)
+	@RequestMapping(value = "/username/{username}", method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "User by Username")
 	public GetUserResult getUserByUsername(@PathVariable("username") String username) {
 		GetUserResult getUserResult = new GetUserResult();
 		User user = (User) userService.getUserByUsername(username);
@@ -84,8 +93,9 @@ public class UserApiController extends BaseApiController {
 		return getUserResult;
 	}
 
-	@RequestMapping(value = "/username/{username}/profile", method = RequestMethod.GET)
+	@RequestMapping(value = "/username/{username}/profile", method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
+    @ApiOperation(value = "Full Profile by Username")
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult getUserProfileByUsername(@PathVariable("username") String username) {
 		GetFullUserResult getFullUserResult = new GetFullUserResult();
@@ -94,7 +104,8 @@ public class UserApiController extends BaseApiController {
 		return getFullUserResult;
 	}
 
-	@RequestMapping(value = {"/externalproviders"}, method = RequestMethod.POST, consumes={"application/json"})
+	@ApiIgnore
+	@RequestMapping(value = {"/externalproviders"}, method = RequestMethod.POST, consumes={"application/json"}, produces = {"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
 	public ActionCompletedResult createExternalUser(@RequestBody ExternalUserDto externalUserDto, Locale locale) {
 		userService.createExternalUser(mapper.map(externalUserDto.getUser(), User.class),
@@ -103,21 +114,22 @@ public class UserApiController extends BaseApiController {
 		return new ActionCompletedResult();
 	}
 
-
-
-	@RequestMapping(value = "/activate/{token}", method = RequestMethod.GET)
+    @ApiIgnore
+	@RequestMapping(value = "/activate/{token}", method = RequestMethod.GET, produces = {"application/json"})
 	public ActionCompletedResult activateAccount(@PathVariable("token") String token) {
 		userService.activateUser(token);
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = "/resetpassword", method = RequestMethod.POST)
+	@ApiIgnore
+	@RequestMapping(value = "/resetpassword", method = RequestMethod.POST, produces = {"application/json"})
 	public ActionCompletedResult resetPassword(@JsonProperty(value = "email") String email, Locale locale) {
 		userService.resetPassword(email, locale);
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = "/resetpassword/{token}", method = RequestMethod.PUT)
+	@ApiIgnore
+	@RequestMapping(value = "/resetpassword/{token}", method = RequestMethod.PUT, produces = {"application/json"})
 	@Transactional
 	public ActionCompletedResult completePasswordReset(
 			@PathVariable(value = "token") String token,
@@ -126,8 +138,9 @@ public class UserApiController extends BaseApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.POST)
+	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.POST, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Follow")
 	public GetFullUserResult follow(@PathVariable("id") Long userId) {
 		GetFullUserResult userProfileResult = new GetFullUserResult();
 		User toFollow = userService.follow(userId);
@@ -138,8 +151,9 @@ public class UserApiController extends BaseApiController {
 		return userProfileResult;
 	}
 
-	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.DELETE)
+	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Unfollow")
 	public GetFullUserResult unFollow(@PathVariable("id") Long userId) {
 		GetFullUserResult userProfileResult = new GetFullUserResult();
 		User toUnfollow = userService.unfollow(userId);
@@ -150,8 +164,9 @@ public class UserApiController extends BaseApiController {
 		return userProfileResult;
 	}
 
-	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/{id}/followers"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
+    @ApiOperation(value = "Followers")
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> getFollowers(
 			@PathVariable("id") Long userId,
@@ -160,9 +175,10 @@ public class UserApiController extends BaseApiController {
 		return userService.getFollowingOrFollowersForUserResult(true, userId, offset, limit);
 	}
 
-	@RequestMapping(value = {"/{id}/following"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/{id}/following"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Followees")
 	public ListItemsResult<UserDto> getFollowing(
 			@PathVariable("id") Long userId,
 			@RequestParam(value="offset", required = false) Integer offset,
@@ -170,8 +186,9 @@ public class UserApiController extends BaseApiController {
 		return userService.getFollowingOrFollowersForUserResult(false, userId, offset, limit);
 	}
 
-	@RequestMapping(value = {"/{id}/streamables"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/{id}/streamables"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
+    @ApiOperation(value = "User Posts")
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getStreamables(
 			@PathVariable("id") Long userId,
@@ -180,18 +197,20 @@ public class UserApiController extends BaseApiController {
 		return streamableService.getUserStreamablesResult(userId, offset, limit);
 	}
 
-	@RequestMapping(value = {"/mostactive"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/mostactive"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Most Active Users")
 	public ListItemsResult<UserDto> getMostActiveUsers(
 			@RequestParam(value="offset", required = false) Integer offset,
 			@RequestParam(value="limit", required = false) Integer limit) {
 		return userService.getMostActiveUsersResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/{id}/liked"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/{id}/liked"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Liked Posts")
 	public ListItemsResult<FullStreamableDto> getLikedStreamablesForUser(
 			@PathVariable("id") Long userId,
 			@RequestParam(value="offset", required = false) Integer offset,
@@ -199,9 +218,10 @@ public class UserApiController extends BaseApiController {
 		return streamableService.getLikedStreamablesForUserResult(userId, offset, limit);
 	}
 
-	@RequestMapping(value = {"/search"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/search"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Search")
 	public ListItemsResult<UserDto> searchUsers(
 			@RequestParam(value="query", required = true) String query,
 			@RequestParam(value="offset", required = false) Integer offset,
@@ -209,9 +229,10 @@ public class UserApiController extends BaseApiController {
 		return userService.searchUsersResult(query, offset, limit);
 	}
 
-	@RequestMapping(value = {"/{id}/mentions"}, method = RequestMethod.GET)
+	@RequestMapping(value = {"/{id}/mentions"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
+    @ApiOperation(value = "Mentions")
 	public ListItemsResult<FullStreamableDto> getMentions(
 			@PathVariable("id") Long userId,
 			@RequestParam(value="offset", required = false) Integer offset,

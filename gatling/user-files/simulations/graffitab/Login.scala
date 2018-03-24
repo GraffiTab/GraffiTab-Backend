@@ -27,7 +27,7 @@ object Login extends Simulation {
     val headers = Map("Content-Type" -> "application/json")
 
     val login = exec(http("Login")
-        .post("/api/login")
+        .post("/v1/login")
         .headers(headers)
         .body(ElFileBody("login.json")).asJSON
         .check(status is 200)
@@ -39,7 +39,7 @@ object Login extends Simulation {
           })
 
     val me =  exec(http("Me")
-      .get("/api/users/me")
+      .get("/v1/users/me")
       .check(status is 200)
       .check(jsonPath("$.user.id").ofType[Int].exists))
   //}

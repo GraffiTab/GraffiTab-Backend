@@ -1,14 +1,14 @@
 package com.graffitab.server.api.authentication;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.util.StringUtils;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import lombok.extern.log4j.Log4j2;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.util.StringUtils;
 
 @Log4j2
 public class UsernamePasswordQueryParamsAuthenticationFilter extends JsonLoginAuthenticationFilter {
@@ -18,7 +18,7 @@ public class UsernamePasswordQueryParamsAuthenticationFilter extends JsonLoginAu
 		// Any request is valid to authenticate like this, not only POSTs
 		this.setPostOnly(false);
 		this.setAllowSessionCreation(false);
-		this.setFilterProcessesUrl("/api/**");
+		this.setFilterProcessesUrl("/v1/**");
 	}
 
 	@Override

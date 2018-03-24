@@ -99,7 +99,7 @@ echo "==== Starting application in ${ENVIRON}02 after deployment ===="
 
 ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && cd $DO_DEPLOYMENT_DIR && nohup ./start.sh > start.log &' 2>&1
 
-echo "= Waiting for startup in in ${ENVIRON}02 ="
+echo "= Waiting for startup in ${ENVIRON}02 ="
 ssh $DO_USER@$DO_SRV02_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/pollForStartup.sh && bash $DO_DEPLOYMENT_DIR/pollForStartup.sh' 2>&1
 
 echo "Application deployed and started successfully in both app servers: SUCCESS"

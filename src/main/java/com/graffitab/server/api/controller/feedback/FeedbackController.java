@@ -14,15 +14,18 @@ import java.util.Locale;
 
 import javax.annotation.Resource;
 
+import springfox.documentation.annotations.ApiIgnore;
+
 @RestController
-@RequestMapping("/api/feedback")
+@RequestMapping("/v1/feedback")
+@ApiIgnore
 public class FeedbackController {
 
 	@Resource
 	private FeedbackService feedbackService;
 
 	@CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
-	@RequestMapping(value = "", method = RequestMethod.POST)
+	@RequestMapping(value = "", method = RequestMethod.POST, produces = {"application/json"})
 	public ActionCompletedResult submitFeedback(@JsonProperty("feedback") FeedbackDto feedbackDto, Locale locale) {
 		feedbackService.sendFeedback(feedbackDto.getName(),
                 feedbackDto.getEmail(),

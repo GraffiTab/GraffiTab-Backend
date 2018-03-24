@@ -16,7 +16,7 @@ class Registration extends Simulation {
 
   val register = feed(feeder)
     .exec(http("Sign up")
-    .post("/api/users")
+    .post("/v1/users")
     .headers(headers)
     .body(ElFileBody("user.json")).asJSON
     .check(status is 201)

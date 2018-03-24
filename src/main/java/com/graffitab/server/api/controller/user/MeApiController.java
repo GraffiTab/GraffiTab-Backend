@@ -62,11 +62,14 @@ import java.io.IOException;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
-@RequestMapping("/api/users/me")
+@RequestMapping("/v1/users/me")
+@Api(value="Me")
 public class MeApiController {
 
 	@Resource
@@ -93,7 +96,8 @@ public class MeApiController {
 	@Resource
 	private OrikaMapper mapper;
 
-	@RequestMapping(value = "", method = RequestMethod.GET)
+    @ApiOperation(value = "My Profile")
+	@RequestMapping(value = "", method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetUserResult getMe() {
@@ -103,7 +107,8 @@ public class MeApiController {
 		return getUserResult;
 	}
 
-	@RequestMapping(value = {"/profile"}, method = RequestMethod.GET)
+    @ApiOperation(value = "My Full Profile")
+	@RequestMapping(value = {"/profile"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult getProfile() {
@@ -113,7 +118,8 @@ public class MeApiController {
 		return userProfileResult;
 	}
 
-	@RequestMapping(value = {"/notifications"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Notifications")
+	@RequestMapping(value = {"/notifications"}, method = RequestMethod.GET, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<NotificationDto> getNotifications(
 			@RequestParam(value = "offset", required = false) Integer offset,
@@ -121,7 +127,8 @@ public class MeApiController {
 		return notificationService.getNotificationsResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/notifications/unreadcount"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Unread Notifications Count")
+	@RequestMapping(value = {"/notifications/unreadcount"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CountResult getUnreadNotifications() {
@@ -131,7 +138,8 @@ public class MeApiController {
 		return countResult;
 	}
 
-	@RequestMapping(value = {""}, method = RequestMethod.PUT, consumes = {"application/json"})
+    @ApiOperation(value = "Edit Profile")
+	@RequestMapping(value = {""}, method = RequestMethod.PUT, consumes = {"application/json"}, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult edit(@JsonProperty("user") UserDto userDto) {
@@ -141,7 +149,8 @@ public class MeApiController {
 		return updateUserResult;
 	}
 
-	@RequestMapping(value = {"/avatar"}, method = RequestMethod.POST)
+    @ApiOperation(value = "Edit Avatar")
+	@RequestMapping(value = {"/avatar"}, method = RequestMethod.POST, produces = {"application/json"})
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public AssetResult editAvatar(@RequestPart("file") @NotNull @NotBlank MultipartFile file) throws IOException {
@@ -163,14 +172,16 @@ public class MeApiController {
 		}
 	}
 
-	@RequestMapping(value = {"/avatar"}, method = RequestMethod.DELETE)
+    @ApiOperation(value = "Delete Avatar")
+	@RequestMapping(value = {"/avatar"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult deleteAvatar() throws IOException {
 		userService.deleteAvatar();
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/cover"}, method = RequestMethod.POST)
+    @ApiOperation(value = "Edit Cover")
+	@RequestMapping(value = {"/cover"}, method = RequestMethod.POST, produces = {"application/json"})
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public AssetResult editCover(@RequestPart("file") @NotNull @NotBlank MultipartFile file) throws IOException {
@@ -192,14 +203,16 @@ public class MeApiController {
 		}
 	}
 
-	@RequestMapping(value = {"/cover"}, method = RequestMethod.DELETE)
+    @ApiOperation(value = "Delete Cover")
+	@RequestMapping(value = {"/cover"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult deleteCover() throws IOException {
 		userService.deleteCover();
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = "/locations", method = RequestMethod.POST)
+    @ApiOperation(value = "Create Location")
+	@RequestMapping(value = "/locations", method = RequestMethod.POST, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateLocationResult createLocation(@JsonProperty("location") LocationDto locationDto) {
@@ -209,7 +222,8 @@ public class MeApiController {
 		return createLocationResult;
 	}
 
-	@RequestMapping(value = "/locations/{id}", method = RequestMethod.PUT)
+    @ApiOperation(value = "Edit Location")
+	@RequestMapping(value = "/locations/{id}", method = RequestMethod.PUT, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateLocationResult editLocation(
@@ -221,7 +235,8 @@ public class MeApiController {
 		return createLocationResult;
 	}
 
-	@RequestMapping(value = "/locations/{id}", method = RequestMethod.DELETE)
+    @ApiOperation(value = "Delete Location")
+	@RequestMapping(value = "/locations/{id}", method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult deleteLocation(@PathVariable("id") Long locationId) {
@@ -229,7 +244,8 @@ public class MeApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/locations"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Locations")
+	@RequestMapping(value = {"/locations"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<LocationDto> getLocations(
@@ -238,7 +254,8 @@ public class MeApiController {
 		return locationService.getLocationsResult(offset, limit);
 	}
 
-	@RequestMapping(value = "/devices", method = RequestMethod.POST)
+    @ApiOperation(value = "Register Device")
+	@RequestMapping(value = "/devices", method = RequestMethod.POST, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult registerDevice(@JsonProperty("device") DeviceDto deviceDto) {
@@ -246,7 +263,8 @@ public class MeApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = "/devices", method = RequestMethod.DELETE)
+    @ApiOperation(value = "Unregister Device")
+	@RequestMapping(value = "/devices", method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult unregisterDevice(@JsonProperty("device") DeviceDto deviceDto) {
@@ -254,7 +272,8 @@ public class MeApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = "/externalproviders", method = RequestMethod.POST)
+    @ApiOperation(value = "Link External Account")
+	@RequestMapping(value = "/externalproviders", method = RequestMethod.POST, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult linkExternalProvider(@JsonProperty("externalProvider") ExternalProviderDto externalProviderDto) {
@@ -264,7 +283,8 @@ public class MeApiController {
 		return userProfileResult;
 	}
 
-	@RequestMapping(value = "/externalproviders", method = RequestMethod.DELETE)
+    @ApiOperation(value = "Unlink External Account")
+	@RequestMapping(value = "/externalproviders", method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullUserResult unlinkExternalProvider(@JsonProperty("type") ExternalProviderType externalProviderType) {
@@ -274,7 +294,8 @@ public class MeApiController {
 		return userProfileResult;
 	}
 
-	@RequestMapping(value = {"/changepassword"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Edit Password")
+	@RequestMapping(value = {"/changepassword"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
@@ -282,7 +303,8 @@ public class MeApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/followers"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Followers")
+	@RequestMapping(value = {"/followers"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> getFollowers(
@@ -291,7 +313,8 @@ public class MeApiController {
 		return userService.getFollowingOrFollowersForUserResult(true, null, offset, limit);
 	}
 
-	@RequestMapping(value = {"/followers/activity"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Followers Activity")
+	@RequestMapping(value = {"/followers/activity"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<ActivityContainerDto> getFollowersActivity(
@@ -301,7 +324,8 @@ public class MeApiController {
 		return activityService.getFollowersActivityResult(numberOfItemsInGroup, offset, limit);
 	}
 
-	@RequestMapping(value = {"/following"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Followees")
+	@RequestMapping(value = {"/following"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> getFollowing(
@@ -310,8 +334,9 @@ public class MeApiController {
 		return userService.getFollowingOrFollowersForUserResult(false, null, offset, limit);
 	}
 
+    @ApiOperation(value = "Import Image")
     @CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
-	@RequestMapping(value = "/streamables/graffiti/import", method = RequestMethod.POST)
+	@RequestMapping(value = "/streamables/graffiti/import", method = RequestMethod.POST, produces = {"application/json"})
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateStreamableResult importGraffiti(@RequestBody StreamableGraffitiDto streamableDto) {
@@ -328,8 +353,9 @@ public class MeApiController {
 		}
 	}
 
+    @ApiOperation(value = "Create Post")
 	@CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
-	@RequestMapping(value = "/streamables/graffiti", method = RequestMethod.POST)
+	@RequestMapping(value = "/streamables/graffiti", method = RequestMethod.POST, produces = {"application/json"})
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateStreamableResult createGraffiti(
@@ -361,7 +387,8 @@ public class MeApiController {
 		}
 	}
 
-	@RequestMapping(value = "/streamables/graffiti/{id}", method = RequestMethod.POST)
+    @ApiOperation(value = "Edit Post")
+	@RequestMapping(value = "/streamables/graffiti/{id}", method = RequestMethod.POST, produces = {"application/json"})
 	@ResponseBody
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateStreamableResult editGraffiti(
@@ -387,7 +414,8 @@ public class MeApiController {
 		}
 	}
 
-	@RequestMapping(value = {"/streamables/{id}"}, method = RequestMethod.DELETE)
+    @ApiOperation(value = "Delete Post")
+	@RequestMapping(value = {"/streamables/{id}"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult deleteStreamable(@PathVariable("id") Long streamableId) {
@@ -395,7 +423,8 @@ public class MeApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/streamables"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Posts")
+	@RequestMapping(value = {"/streamables"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getStreamables(
@@ -404,7 +433,8 @@ public class MeApiController {
 		return streamableService.getUserStreamablesResult(userService.getCurrentUser().getId(), offset, limit);
 	}
 
-	@RequestMapping(value = {"/streamables/{id}/private"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Make Post Public")
+	@RequestMapping(value = {"/streamables/{id}/private"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult makePublic(@PathVariable("id") Long streamableId) {
@@ -414,7 +444,8 @@ public class MeApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/streamables/{id}/private"}, method = RequestMethod.DELETE)
+    @ApiOperation(value = "Make Post Private")
+	@RequestMapping(value = {"/streamables/{id}/private"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult makePrivate(@PathVariable("id") Long streamableId) {
@@ -424,7 +455,8 @@ public class MeApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/streamables/private"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Private Posts")
+	@RequestMapping(value = {"/streamables/private"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getPrivateStreamables(
@@ -433,7 +465,8 @@ public class MeApiController {
 		return streamableService.getPrivateStreamablesResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/feed"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Feed")
+	@RequestMapping(value = {"/feed"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getFeed(
@@ -442,7 +475,8 @@ public class MeApiController {
 		return activityService.getUserFeedResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/liked"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Likes")
+	@RequestMapping(value = {"/liked"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getLikedStreamablesForUser(
@@ -451,7 +485,8 @@ public class MeApiController {
 		return streamableService.getLikedStreamablesForUserResult(userService.getCurrentUser().getId(), offset, limit);
 	}
 
-	@RequestMapping(value = {"/social/friends"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Linked Account Friends")
+	@RequestMapping(value = {"/social/friends"}, method = RequestMethod.GET, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserSocialFriendsContainerDto> getSocialFriends(
 			@RequestParam(value = "offset", required = false) Integer offset,
@@ -459,7 +494,8 @@ public class MeApiController {
 		return userService.getSocialFriendsResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/social/{type}/friends"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Linked Account Friends by Provider")
+	@RequestMapping(value = {"/social/{type}/friends"}, method = RequestMethod.GET, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public UserSocialFriendsContainerDto getSocialFriends(
 			@PathVariable("type") ExternalProviderType type,
@@ -469,7 +505,8 @@ public class MeApiController {
 		return mapper.map(container, UserSocialFriendsContainerDto.class);
 	}
 
-	@RequestMapping(value = {"/social/{type}/avatar"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Import Linked Account Avatar")
+	@RequestMapping(value = {"/social/{type}/avatar"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public AssetResult importSocialAvatar(@PathVariable("type") ExternalProviderType type) {
 		AssetResult createAssetResult = new AssetResult();
@@ -478,7 +515,8 @@ public class MeApiController {
 		return createAssetResult;
 	}
 
-	@RequestMapping(value = {"/mentions"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Mentions")
+	@RequestMapping(value = {"/mentions"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getMentions(
@@ -487,7 +525,8 @@ public class MeApiController {
 		return streamableService.getUserMentionsResult(userService.getCurrentUser().getId(), offset, limit);
 	}
 
-	@RequestMapping(value = {"/whotofollow"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Who to Follow")
+	@RequestMapping(value = {"/whotofollow"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> whoToFollow(@RequestParam(value = "offset", required = false) Integer offset,
@@ -495,14 +534,16 @@ public class MeApiController {
 		return userService.findRecommendedUsersToFollow(offset, limit);
 	}
 
-	@RequestMapping(value = {"/notifications/readall"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Mark All Notifications Read")
+	@RequestMapping(value = {"/notifications/readall"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult readAllNotifications() {
 		notificationService.markAllNotificationsAsReadForCurrentUser();
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/notifications/{id}/read"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Mark Notification Read")
+	@RequestMapping(value = {"/notifications/{id}/read"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult readSingleNotification(@PathVariable("id") Long id) {
 		notificationService.markNotificationAsRead(id);

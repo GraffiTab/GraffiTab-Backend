@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Docs - GraffiTab Developers">
+    <meta name="author" content="GraffiTab">
+    <meta property="og:url" content="https://api.graffitab.com"/>
+    <meta property="og:type" content="article"/>
+    <meta property="og:title" content="Docs"/>
+
+    <title>Docs - GraffiTab Developers</title>
+
+    <link href="../documentation/assets/css/custom-style.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../documentation/assets/img/favicon.ico" type="image/x-icon"/>
+    <link rel="icon" href="../documentation/assets/img/favicon.ico" type="image/x-icon"/>
+</head>
+
+<body data-spy="scroll" data-target="#resources_nav" data-offset="60">
+    <nav id="main-nav" class="navbar navbar-expand-md navbar-dark bg-dark">
+        <a class="navbar-brand" href="./">GraffiTab Documentation</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sticky_nav_wrapper">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+         <!-- Keep For Reference
+        <div class="collapse navbar-collapse" id="swaggerTopNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+        -->
+        <!-- <form class="form-inline ml-auto d-none d-lg-block">
+            <div class="input-group input-group-sm">
+                <input type="text" autocorrect="off" class="form-control form-control-sm" id="input_baseUrl" placeholder="http://example.com/api">
+                <div class="input-group-append">
+                    <button data-add-scope id="update-url" class="btn btn-secondary" type="button">Explore</button>
+                </div>
+            </div>
+        </form> -->
+    </nav>
+    <main role="main" class="container-fluid">
+        <div id="swagger-ui-container" class="row"></div>
+    </main>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>window.jQuery || document.write('<script src="assets/lib/jquery-3.2.1.min.js"><\/script>')</script>
+
+    <!-- Dependencies -->
+    <script src="../documentation/assets/lib/jquery.wiggle.min.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/handlebars-2.0.0.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/underscore-min.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/backbone-min.js" type="text/javascript"></script>
+    <script src="../documentation/assets/swagger-ui.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/marked.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/bootstrap.min.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/highlight.pack.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/scrollPosStyler.min.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/fontawesome-all.min.js" type="text/javascript"></script>
+    <script src="../documentation/assets/lib/swagger-oauth.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            window.swaggerUi = new SwaggerUi({
+                url: '/v2/api-docs', // Change to your json
+                dom_id: "swagger-ui-container",
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'],
+                onComplete: function (swaggerApi, swaggerUi) {
+                    // if(typeof initOAuth == "function") {
+                    //     initOAuth()
+                    // }
+
+                    $('pre code').each(function (i, e) {
+                        hljs.highlightBlock(e)
+                    });
+
+                    ScrollPosStyler.init({ scrollOffsetY: 54 });
+
+                    // Scroll To Item
+                    var ancloc = window.location.hash;
+                    if(ancloc){
+                        document.location.href=ancloc;
+                    }
+
+                    // Set Key by default
+                    // addApiKeyAuthorization();
+                },
+                onFailure: function (data) {
+                    console.log("Unable to Load SwaggerUI");
+                },
+                docExpansion: "none",
+                sorter: "alpha"
+            });
+            window.swaggerUi.load();
+
+            function addApiKeyAuthorization() {
+                key = 'fbc44ac8-e03f-4611-847a-6d5a72bbe76b';
+                var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization('x-api-key', key, 'header');
+                window.swaggerUi.api.clientAuthorizations.add('x-api-key', apiKeyAuth);
+                $('#input_apiKey_x-api-key').val(key)
+            }
+
+            // Optional if including Explore form
+            $('#update-url').click(function(){
+                window.swaggerUi.updateSwaggerUi({
+                  url: $('#input_baseUrl').val()
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -74,7 +74,7 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
       web
         .ignoring()
-           .antMatchers("/favicon.ico","/resources/**", "/public/**");
+           .antMatchers("/favicon.ico", "/resources/**", "/public/**");
     }
 
 	@Configuration
@@ -100,7 +100,7 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
         	// and it is not authenticated (anonymous) we let it pass -- this is what we want for login
             http.csrf().disable()
                   .requestMatchers()
-                    .antMatchers(HttpMethod.POST, "/api/login", "/api/externalproviders/login")
+                    .antMatchers(HttpMethod.POST, "/v1/login", "/v1/externalproviders/login")
                     .and()
                     .authorizeRequests()
                     .anyRequest()
@@ -137,10 +137,10 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
         	// register endpoints
             http.csrf().disable()
                   .requestMatchers()
-                    .antMatchers(HttpMethod.POST, "/api/users", "/api/users/resetpassword", "/api/users/externalproviders", "/api/feedback")
-                    .antMatchers(HttpMethod.OPTIONS, "/api/feedback", "/api/users/me/streamables/graffiti", "/api/users/me/streamables/graffiti/import", "/api/streamables/{\\d+}/comments")
-                    .antMatchers(HttpMethod.GET, "/api/users/activate/**", "/api/auth/**")
-                    .antMatchers(HttpMethod.PUT, "/api/users/resetpassword/**")
+                    .antMatchers(HttpMethod.POST, "/v1/users", "/v1/users/resetpassword", "/v1/users/externalproviders", "/v1/feedback")
+                    .antMatchers(HttpMethod.OPTIONS, "/v1/feedback", "/v1/users/me/streamables/graffiti", "/v1/users/me/streamables/graffiti/import", "/v1/streamables/{\\d+}/comments")
+                    .antMatchers(HttpMethod.GET, "/v1/users/activate/**", "/v1/auth/**")
+                    .antMatchers(HttpMethod.PUT, "/v1/users/resetpassword/**")
                     .and()
                     .authorizeRequests()
                     .anyRequest()
@@ -188,7 +188,9 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
                     .securityContext()
                     	.securityContextRepository(securityContextRepository)
                     .and()
-                    .antMatcher("/api/**")
+                    .requestMatchers()
+                    .antMatchers("/v1/**")
+                    .and()
             	    .sessionManagement()
             	    	.sessionCreationPolicy(SessionCreationPolicy.NEVER)
             	    .and()
@@ -197,7 +199,7 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                     .logout()
                        .deleteCookies("JSESSIONID").invalidateHttpSession(true)
- 				       .logoutUrl("/api/logout").logoutSuccessHandler(new OkResponseLogoutHandler());
+ 				       .logoutUrl("/v1/logout").logoutSuccessHandler(new OkResponseLogoutHandler());
 
             // Add the invalidation session filter after this check, as it could be creating a new session
             http.addFilterAfter(invalidateSessionFilter, SecurityContextPersistenceFilter.class);

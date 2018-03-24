@@ -1,20 +1,5 @@
 package com.graffitab.server.api.authentication;
 
-import java.io.IOException;
-
-import javax.annotation.Resource;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONObject;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
 import com.graffitab.server.api.errors.EntityNotFoundException;
 import com.graffitab.server.api.errors.ExternalProviderTokenInvalidException;
 import com.graffitab.server.api.errors.LoginUserNotActiveException;
@@ -28,6 +13,21 @@ import com.graffitab.server.service.AuthenticationService;
 import com.graffitab.server.service.social.SocialNetworksService;
 import com.graffitab.server.service.user.ExternalProviderService;
 import com.graffitab.server.service.user.UserService;
+
+import org.json.JSONObject;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.io.IOException;
+
+import javax.annotation.Resource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -48,7 +48,7 @@ public class ExternalProviderAuthenticationFilter extends AbstractAuthentication
 
 
 	public ExternalProviderAuthenticationFilter() {
-		super(new AntPathRequestMatcher("/api/externalproviders/login", "POST"));
+		super(new AntPathRequestMatcher("/v1/externalproviders/login", "POST"));
 	}
 
 	@Override

@@ -21,7 +21,7 @@ public class UserTestHelper {
         String json = "";
 
         while (!json.contains("\"state\":\"COMPLETED\"") && !isTimeout(startTime, timeoutInMillis)) {
-            MvcResult result = mockMvc.perform(get("/api/assets/" + assetGuid + "/progress")
+            MvcResult result = mockMvc.perform(get("/v1/assets/" + assetGuid + "/progress")
                     .with(user(loggedInUser))
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())

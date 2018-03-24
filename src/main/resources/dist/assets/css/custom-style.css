@@ -1,0 +1,10 @@
+@import url(../css/style.css);
+
+a {
+	color: #2584b2;
+}
+
+.btn-primary {
+	background-color: #2584b2;
+	border-color: #2584b2;
+}

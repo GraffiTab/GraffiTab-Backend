@@ -28,8 +28,12 @@ import java.util.Locale;
 
 import javax.annotation.Resource;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 @RestController
-@RequestMapping("/api/streamables")
+@RequestMapping("/v1/streamables")
+@Api(value="Posts")
 public class StreamableApiController {
 
 	@Resource
@@ -41,7 +45,8 @@ public class StreamableApiController {
 	@Resource
 	private OrikaMapper mapper;
 
-	@RequestMapping(value = {"/{id}"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Post Info")
+	@RequestMapping(value = {"/{id}"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult getStreamable(@PathVariable("id") Long streamableId) {
@@ -51,7 +56,8 @@ public class StreamableApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.POST)
+    @ApiOperation(value = "Like")
+	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.POST, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult like(@PathVariable("id") Long streamableId) {
 		GetFullStreamableResult getFullStreamableResult = new GetFullStreamableResult();
@@ -60,7 +66,8 @@ public class StreamableApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.DELETE)
+    @ApiOperation(value = "Unlike")
+	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult unlike(@PathVariable("id") Long streamableId) {
@@ -70,7 +77,8 @@ public class StreamableApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Likers")
+	@RequestMapping(value = {"/{id}/likes"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<UserDto> getLikers(
@@ -80,8 +88,9 @@ public class StreamableApiController {
 		return streamableService.getLikersResult(streamableId, offset, limit);
 	}
 
+    @ApiOperation(value = "Post Comment")
 	@CrossOrigin(origins = {"https://graffitab.com", "https://dev.graffitab.com"})
-	@RequestMapping(value = {"/{id}/comments"}, method = RequestMethod.POST)
+	@RequestMapping(value = {"/{id}/comments"}, method = RequestMethod.POST, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateCommentResult postComment(
 			@PathVariable("id") Long streamableId,
@@ -92,7 +101,8 @@ public class StreamableApiController {
 		return createCommentResult;
 	}
 
-	@RequestMapping(value = {"/{id}/comments/{commentId}"}, method = RequestMethod.DELETE)
+    @ApiOperation(value = "Delete Comment")
+	@RequestMapping(value = {"/{id}/comments/{commentId}"}, method = RequestMethod.DELETE, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ActionCompletedResult deleteComment(
@@ -102,7 +112,8 @@ public class StreamableApiController {
 		return new ActionCompletedResult();
 	}
 
-	@RequestMapping(value = {"/{id}/comments/{commentId}"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Edit Comment")
+	@RequestMapping(value = {"/{id}/comments/{commentId}"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@Transactional
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public CreateCommentResult editComment(
@@ -115,7 +126,8 @@ public class StreamableApiController {
 		return createCommentResult;
 	}
 
-	@RequestMapping(value = {"/{id}/comments"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Comments")
+	@RequestMapping(value = {"/{id}/comments"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<CommentDto> getComments(
@@ -125,7 +137,8 @@ public class StreamableApiController {
 		return commentService.getCommentsResult(streamableId, offset, limit);
 	}
 
-	@RequestMapping(value = {"/newest"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Newest Posts")
+	@RequestMapping(value = {"/newest"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getNewestStreamables(
@@ -134,7 +147,8 @@ public class StreamableApiController {
 		return streamableService.getNewestStreamablesResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/popular"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Popular Posts")
+	@RequestMapping(value = {"/popular"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> getPopularStreamables(
@@ -143,7 +157,8 @@ public class StreamableApiController {
 		return streamableService.getPopularStreamablesResult(offset, limit);
 	}
 
-	@RequestMapping(value = {"/{id}/flag"}, method = RequestMethod.PUT)
+    @ApiOperation(value = "Flag")
+	@RequestMapping(value = {"/{id}/flag"}, method = RequestMethod.PUT, produces = {"application/json"})
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public GetFullStreamableResult flag(@PathVariable("id") Long streamableId, Locale locale) {
 		GetFullStreamableResult getFullStreamableResult = new GetFullStreamableResult();
@@ -152,7 +167,8 @@ public class StreamableApiController {
 		return getFullStreamableResult;
 	}
 
-	@RequestMapping(value = {"/search/location"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Search by Location")
+	@RequestMapping(value = {"/search/location"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> searchStreamablesAtLocation(
@@ -162,7 +178,8 @@ public class StreamableApiController {
 		return streamableService.searchStreamablesAtLocationResult(latitude, longitude, radius);
 	}
 
-	@RequestMapping(value = {"/search/hashtag"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Search by Hashtag")
+	@RequestMapping(value = {"/search/hashtag"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<FullStreamableDto> searchStreamablesForHashtag(
@@ -172,7 +189,8 @@ public class StreamableApiController {
 		return streamableService.searchStreamablesForHashtagResult(query, offset, limit);
 	}
 
-	@RequestMapping(value = {"/search/hashtags"}, method = RequestMethod.GET)
+    @ApiOperation(value = "Search Hashtags")
+	@RequestMapping(value = {"/search/hashtags"}, method = RequestMethod.GET, produces = {"application/json"})
 	@Transactional(readOnly = true)
 	@UserStatusRequired(value = AccountStatus.ACTIVE)
 	public ListItemsResult<String> searchHashtags(

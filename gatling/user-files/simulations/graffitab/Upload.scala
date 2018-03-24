@@ -17,14 +17,14 @@ class Upload extends Simulation {
     .exec(Login.login)
     .pause(2)
     .exec(http("Upload Avatar")
-    .post("/api/users/me/avatar")
+    .post("/v1/users/me/avatar")
       .bodyPart(RawFileBodyPart("file","testAvatar.png").contentType("image/png")).asMultipartForm
     .check(status is 200)
     .check(jsonPath("$.asset.guid").ofType[String].exists))
 
   val uploadCover = pause(2)
     .exec(http("Upload Cover")
-      .post("/api/users/me/cover")
+      .post("/v1/users/me/cover")
       .bodyPart(RawFileBodyPart("file","testCover.jpg").contentType("image/jpeg")).asMultipartForm
       .check(status is 200)
       .check(jsonPath("$.asset.guid").ofType[String].exists))

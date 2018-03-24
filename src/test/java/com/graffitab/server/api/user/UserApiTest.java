@@ -149,7 +149,7 @@ public class UserApiTest {
     public void getUserByIdTest() throws Exception {
         User loggedInUser = createUser();
         User testUser = createUser2();
-        mockMvc.perform(get("/api/users/" + testUser.getId())
+        mockMvc.perform(get("/v1/users/" + testUser.getId())
                 .with(user(loggedInUser))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -209,7 +209,7 @@ public class UserApiTest {
         User userToFollow = createUser2();
 
         // Follow someone
-        ResultActions followResultActions = mockMvc.perform(post("/api/users/" + userToFollow.getId() + "/followers")
+        ResultActions followResultActions = mockMvc.perform(post("/v1/users/" + userToFollow.getId() + "/followers")
                 .with(user(currentUser)))
                 .andExpect(status().is(200))
                 .andExpect(content().contentType("application/json;charset=UTF-8"));
@@ -217,7 +217,7 @@ public class UserApiTest {
         assertFollowEndpointResponse(followResultActions);
 
         // Check the followers
-        ResultActions getFollowersResultActions = mockMvc.perform(get("/api/users/" + userToFollow.getId() + "/followers")
+        ResultActions getFollowersResultActions = mockMvc.perform(get("/v1/users/" + userToFollow.getId() + "/followers")
                 .with(user(currentUser)));
 
         assertGetFollowersResponse(getFollowersResultActions, currentUser, 1, 0);
@@ -229,7 +229,7 @@ public class UserApiTest {
 
         User currentUser = createUser();
 
-        mockMvc.perform(post("/api/users/" + currentUser.getId() + "/followers")
+        mockMvc.perform(post("/v1/users/" + currentUser.getId() + "/followers")
                 .with(user(currentUser)))
                 .andExpect(status().is(400))
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -242,12 +242,12 @@ public class UserApiTest {
         User userToFollow = createUser2();
 
         // Follow first
-        mockMvc.perform(post("/api/users/" + userToFollow.getId() + "/followers")
+        mockMvc.perform(post("/v1/users/" + userToFollow.getId() + "/followers")
                 .with(user(currentUser)))
                 .andExpect(status().is(200));
 
         // Unfollow afterwards
-        mockMvc.perform(delete("/api/users/" + userToFollow.getId() + "/followers")
+        mockMvc.perform(delete("/v1/users/" + userToFollow.getId() + "/followers")
                 .with(user(currentUser)))
                 .andExpect(status().is(200));
 
@@ -262,7 +262,7 @@ public class UserApiTest {
         contentTypeParams.put("boundary", "265001916915724");
         MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/avatar")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/v1/users/me/avatar")
                 .file(assetFile)
                 .with(user(loggedInUser))
                 .contentType(mediaType))
@@ -286,7 +286,7 @@ public class UserApiTest {
         contentTypeParams.put("boundary", "265001916915724");
         MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
 
-        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/cover")
+        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/v1/users/me/cover")
                 .file(assetFile)
                 .with(user(loggedInUser))
                 .contentType(mediaType))
@@ -315,7 +315,7 @@ public class UserApiTest {
         contentTypeParams.put("boundary", "265001916915724");
        MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
 
-        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/streamables/graffiti")
+        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/v1/users/me/streamables/graffiti")
                 .file(streamableFile)
                 .file(jsonFile)
                 .with(user(loggedInUser))
@@ -351,7 +351,7 @@ public class UserApiTest {
         MediaType mediaType = new MediaType("multipart", "form-data", contentTypeParams);
 
         //TODO: Factor this into a separate method: ResultActions vs MvcResult
-        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/api/users/me/streamables/graffiti")
+        MvcResult result  = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/v1/users/me/streamables/graffiti")
                 .file(streamableFile)
                 .file(jsonFile)
                 .with(user(loggedInUser))
@@ -424,7 +424,7 @@ public class UserApiTest {
         loginDto.setUsername(usernameOrEmail);
         String json = mapper.writeValueAsString(loginDto);
 
-        mockMvc.perform(post("/api/login")
+        mockMvc.perform(post("/v1/login")
                 .contentType("application/json;charset=UTF-8")
                 .content(json))
                 .andExpect(status().is(200)).andReturn();
@@ -460,7 +460,7 @@ public class UserApiTest {
     }
 
     private void performRegistrationTestAndAssert(String language, String json, String welcomeMessage) throws Exception {
-        MockHttpServletRequestBuilder mockHttpServletRequestBuilder = post("/api/users")
+        MockHttpServletRequestBuilder mockHttpServletRequestBuilder = post("/v1/users")
                 .contentType("application/json;charset=UTF-8");
 
         if (StringUtils.hasText(language)) {

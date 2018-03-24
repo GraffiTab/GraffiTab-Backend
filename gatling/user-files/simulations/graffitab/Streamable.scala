@@ -8,7 +8,7 @@ import io.gatling.http.Predef._
   */
 object Streamable {
   val newest = exec(http("Newest streamables")
-    .get("/api/streamables/newest")
+    .get("/v1/streamables/newest")
     .check(status is 200)
     .check(jsonPath("$.items").exists))
 }

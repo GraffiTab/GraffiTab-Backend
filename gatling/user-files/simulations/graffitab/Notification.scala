@@ -9,12 +9,12 @@ import io.gatling.http.Predef._
 object Notification {
 
   val unseenNotifications = exec(http("Unread notifications")
-    .get("/api/users/me/notifications/unreadcount")
+    .get("/v1/users/me/notifications/unreadcount")
     .check(status is 200)
     .check(jsonPath("$.count").ofType[Int].exists))
 
   val getNotifications = exec(http("Notifications")
-    .get("/api/users/me/notifications")
+    .get("/v1/users/me/notifications")
     .check(status is 200)
     .check(jsonPath("$.items").exists))
 
