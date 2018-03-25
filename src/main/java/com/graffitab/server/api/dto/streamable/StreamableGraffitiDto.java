@@ -13,4 +13,5 @@ public class StreamableGraffitiDto {
 	private Double pitch;
 	private AssetDto asset;
 	private String text;
+	private Boolean isPrivate;
 }

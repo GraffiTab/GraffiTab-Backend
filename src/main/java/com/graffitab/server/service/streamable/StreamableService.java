@@ -28,14 +28,16 @@ import com.graffitab.server.service.store.DatastoreService;
 import com.graffitab.server.service.user.UserService;
 import com.graffitab.server.util.GPSUtils;
 import com.graffitab.server.util.GuidGenerator;
+
 import org.hibernate.Query;
 import org.javatuples.Pair;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Locale;
+
+import javax.annotation.Resource;
 
 @Service
 public class StreamableService {
@@ -114,7 +116,9 @@ public class StreamableService {
 					streamableGraffitiDto.getLongitude(),
 					streamableGraffitiDto.getRoll(),
 					streamableGraffitiDto.getYaw(),
-					streamableGraffitiDto.getPitch(), streamableGraffitiDto.getText());
+					streamableGraffitiDto.getPitch(),
+					streamableGraffitiDto.getText(),
+                    streamableGraffitiDto.getIsPrivate());
 			streamableGraffiti.setAsset(assetToAdd);
 			streamableGraffiti.setUser(currentUser);
 			currentUser.getStreamables().add(streamableGraffiti);
@@ -277,8 +281,10 @@ public class StreamableService {
 		User user = userService.findUserById(userId);
 
 		if (user != null) {
+            User currentUser = userService.getCurrentUser();
 			Query query = userDao.createNamedQuery("Streamable.getUserStreamables");
-			query.setParameter("currentUser", user);
+			query.setParameter("user", user);
+			query.setParameter("currentUser", currentUser);
 
 			return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 		} else {
@@ -291,8 +297,10 @@ public class StreamableService {
 		User user = userService.findUserById(userId);
 
 		if (user != null) {
+            User currentUser = userService.getCurrentUser();
 			Query query = userDao.createNamedQuery("Streamable.getUserMentions");
-			query.setParameter("currentUser", user);
+			query.setParameter("user", user);
+			query.setParameter("currentUser", currentUser);
 
 			return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 		} else {
@@ -302,15 +310,17 @@ public class StreamableService {
 
 	@Transactional(readOnly = true)
 	public ListItemsResult<FullStreamableDto> getNewestStreamablesResult(Integer offset, Integer limit) {
+        User currentUser = userService.getCurrentUser();
 		Query query = streamableDao.createNamedQuery("Streamable.getNewestStreamables");
-
+        query.setParameter("currentUser", currentUser);
 		return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 	}
 
 	@Transactional(readOnly = true)
 	public ListItemsResult<FullStreamableDto> getPopularStreamablesResult(Integer offset, Integer limit) {
-		Query query = streamableDao.createNamedQuery("Streamable.getPopularStreamables");
-
+        User currentUser = userService.getCurrentUser();
+	    Query query = streamableDao.createNamedQuery("Streamable.getPopularStreamables");
+        query.setParameter("currentUser", currentUser);
 		return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 	}
 
@@ -367,8 +377,10 @@ public class StreamableService {
 		User user = userService.findUserById(userId);
 
 		if (user != null) {
+            User currentUser = userService.getCurrentUser();
 			Query query = streamableDao.createNamedQuery("Streamable.getLikedStreamables");
-			query.setParameter("currentUser", user);
+			query.setParameter("user", user);
+			query.setParameter("currentUser", currentUser);
 
 			return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 		} else {
@@ -393,11 +405,13 @@ public class StreamableService {
 		Pair<Double, Double> neOffset = GPSUtils.offsetCoordinates(latitude, longitude, radius);
 		Pair<Double, Double> swOffset = GPSUtils.offsetCoordinates(latitude, longitude, -radius);
 
+        User currentUser = userService.getCurrentUser();
 		Query query = streamableDao.createNamedQuery("Streamable.searchStreamablesAtLocation");
 		query.setParameter("neLatitude", neOffset.getValue(0));
 		query.setParameter("swLatitude", swOffset.getValue(0));
 		query.setParameter("neLongitude", neOffset.getValue(1));
 		query.setParameter("swLongitude", swOffset.getValue(1));
+		query.setParameter("currentUser", currentUser);
 
 		return locationsPagingService.getPagedItems(Streamable.class, FullStreamableDto.class, 0, PagingService.PAGE_SIZE_MAX_VALUE_LOCATION, query);
 	}
@@ -405,10 +419,12 @@ public class StreamableService {
 	@Transactional(readOnly = true)
 	public ListItemsResult<FullStreamableDto> searchStreamablesForHashtagResult(String hashtag, Integer offset, Integer limit) {
 		// Filter out special characters to prevent SQL injection.
-		hashtag = hashtag.toLowerCase() + "%";
+		hashtag = "%" + hashtag.toLowerCase() + "%";
 
+        User currentUser = userService.getCurrentUser();
 		Query query = streamableDao.createNamedQuery("Streamable.searchStreamablesForHashtag");
 		query.setParameter("tag", hashtag);
+		query.setParameter("currentUser", currentUser);
 
 		return pagingService.getPagedItems(Streamable.class, FullStreamableDto.class, offset, limit, query);
 	}

@@ -168,7 +168,7 @@ dependencies {
     compile "org.springframework.session:spring-session:$springSessionVersion"
     compile("org.springframework.boot:spring-boot-starter-thymeleaf")
 
-    compile('org.springframework.boot:spring-boot-devtools')
+//    compile('org.springframework.boot:spring-boot-devtools')
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.security:spring-security-test:4.0.3.RELEASE'
     testCompile 'org.subethamail:subethasmtp-wiser:1.2'

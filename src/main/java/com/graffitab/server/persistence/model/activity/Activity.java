@@ -1,5 +1,13 @@
 package com.graffitab.server.persistence.model.activity;
 
+import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.util.DateTimeToLongConverter;
+
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+import org.joda.time.DateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -15,14 +23,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
-import org.joda.time.DateTime;
-
-import com.graffitab.server.persistence.dao.Identifiable;
-import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.persistence.util.DateTimeToLongConverter;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -56,7 +56,7 @@ import lombok.Setter;
 			  + "or u = :currentUser) " // We would like the user's items to appear in their feed too.
 			  + "and s is not null " // We only allow streamables in the feed for now.
 			  			  + "and s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  			  + "and s.isPrivate = 'N' "
+			  			  + "and (s.isPrivate = 'N' or u = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by a.createdOn desc"
 		)
 })

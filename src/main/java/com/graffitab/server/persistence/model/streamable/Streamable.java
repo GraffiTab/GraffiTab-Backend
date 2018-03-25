@@ -6,12 +6,13 @@ import com.graffitab.server.persistence.model.asset.Asset;
 import com.graffitab.server.persistence.model.user.User;
 import com.graffitab.server.persistence.util.BooleanToStringConverter;
 import com.graffitab.server.persistence.util.DateTimeToLongConverter;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
 import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -36,8 +37,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 @NamedQueries({
 	@NamedQuery(
@@ -45,7 +48,7 @@ import java.util.List;
 		query = "select s "
 			  + "from Streamable s "
 			  + "where s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+			  + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by s.createdOn desc"
 	),
 	@NamedQuery(
@@ -54,7 +57,7 @@ import java.util.List;
 			  + "from Streamable s "
 			  + "left join s.likers l "
 			  + "where s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+              + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "group by s.id "
 			  + "order by count(l) desc"
 	),
@@ -63,9 +66,9 @@ import java.util.List;
 		query = "select s "
 			  + "from Streamable s "
 			  + "join s.likers u "
-			  + "where u = :currentUser "
+			  + "where u = :user "
 			  + "and s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+              + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by s.createdOn desc"
 	),
 	@NamedQuery(
@@ -76,7 +79,7 @@ import java.util.List;
 			  + "and s.latitude <= :neLatitude and s.latitude >= :swLatitude " // Check that the streamable is inside the required GPS rectangle.
 			  + "and s.longitude <= :neLongitude and s.longitude >= :swLongitude "
 			  + "and s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+              + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by s.createdOn desc"
 	),
 	@NamedQuery(
@@ -93,7 +96,7 @@ import java.util.List;
 			  + "join s.hashtags h "
 			  + "where h like :tag "
 			  + "and s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+              + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by s.createdOn desc"
 	),
 	@NamedQuery(
@@ -108,9 +111,9 @@ import java.util.List;
 		query = "select s "
 			  + "from User u "
 			  + "join u.streamables s "
-			  + "where u = :currentUser "
+			  + "where u = :user "
 			  + "and s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+			  + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by s.createdOn desc"
 	),
 	@NamedQuery(
@@ -119,10 +122,10 @@ import java.util.List;
 			  + "from User u "
 			  + "join u.notifications n "
 			  + "left join n.mentionedStreamable s "
-			  + "where u = :currentUser "
+			  + "where u = :user "
 			  + "and n.notificationType = 'MENTION' " // Only look through mention-type notifications for now.
 			  + "and s.isDeleted = 'N' " // Enforce rules for hidden items.
-			  + "and s.isPrivate = 'N' "
+              + "and (s.isPrivate = 'N' or s.user = :currentUser) " // If the post is private, we want the its creator to be able to see it.
 			  + "order by s.createdOn desc"
 	),
 	@NamedQuery(
@@ -193,7 +196,7 @@ public abstract class Streamable implements Identifiable<Long> {
 	private Boolean isDeleted;
 
 	@Column(name = "text")
-	protected String text;
+	private String text;
 
 	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "asset_id")
