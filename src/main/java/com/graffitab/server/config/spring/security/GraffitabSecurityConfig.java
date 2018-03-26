@@ -19,11 +19,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.builders
+        .AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration
+        .WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,6 +34,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -152,7 +157,20 @@ public class GraffitabSecurityConfig extends WebSecurityConfigurerAdapter {
 			http.addFilterBefore(jsonAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
             http.addFilterBefore(protocolCheckingFilter, JsonLoginAuthenticationFilter.class);
             http.exceptionHandling().authenticationEntryPoint(commonAuthenticationEntryPoint);
+        }
 
+        @Bean
+        public CorsFilter corsFilter() {
+            // Allow anyone and anything access. Probably ok for Swagger spec
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowCredentials(true);
+            config.addAllowedOrigin("*");
+            config.addAllowedHeader("*");
+            config.addAllowedMethod("*");
+
+            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+            source.registerCorsConfiguration("/v2/api-docs", config);
+            return new CorsFilter(source);
         }
 	}
 
