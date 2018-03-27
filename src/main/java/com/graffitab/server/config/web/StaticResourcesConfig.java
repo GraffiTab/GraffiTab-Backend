@@ -18,21 +18,11 @@ public class StaticResourcesConfig extends WebMvcConfigurerAdapter {
 		registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		registry.addResourceHandler("/public/**")
 				.addResourceLocations("classpath:public/");
-
-         // Setup Swagger UI
-        // This is for the default swagger config.
-//        registry.addResourceHandler("swagger-ui.html")
-//                .addResourceLocations("classpath:/META-INF/resources/");
-        registry.addResourceHandler("/documentation/**")
-                .addResourceLocations("classpath:/dist/");
-        registry.addResourceHandler("/webjars/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
 	}
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/docs").setViewName("redirect:/docs/");
-        registry.addViewController("/docs/").setViewName("forward:/documentation/index.html");
+        registry.addViewController("/**").setViewName("forward:/public/landing/index.html");
 	    super.addViewControllers(registry);
     }
 }

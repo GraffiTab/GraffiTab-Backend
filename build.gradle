@@ -147,7 +147,6 @@ dependencies {
 
     // Swagger
     compile "io.springfox:springfox-swagger2:$swaggerVersion"
-    compile "io.springfox:springfox-swagger-ui:$swaggerVersion"
 
     // for OAuth 2.0
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.8.RELEASE'

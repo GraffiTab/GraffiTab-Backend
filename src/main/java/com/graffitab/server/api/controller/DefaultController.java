@@ -4,10 +4,6 @@ import com.graffitab.server.service.user.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -29,8 +25,8 @@ public class DefaultController {
 //		return statusDto;
 //	}
 
-	@RequestMapping(value = {"/", "/index.html"})
-	public String getBasePage(HttpServletRequest request, Model model) {
-		return "redirect:/docs";
-	}
+//	@RequestMapping(value = {"/", "/index.html"})
+//	public String getBasePage(HttpServletRequest request, Model model) {
+//		return "redirect:/docs";
+//	}
 }
