@@ -1,0 +1,146 @@
+version: 2
+
+references:
+
+  # Container configuration.
+  container_config: &container_config
+    docker:
+      - image: circleci/openjdk:8-jdk-browsers
+    working_directory: ~/code
+    environment: &base_environment
+        TERM: dumb
+        CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+        _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
+        GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"'
+
+  # Cache configuration.
+#  general_cache_key: &general_cache_key
+#    key: graffitab-{{ checksum "build.gradle" }}
+#  code_source_cache_key: &code_source_cache_key
+#    key: source-v1-{{ .Branch }}-{{ .Revision }}
+#  cache_paths: &cache_paths
+#    paths:
+#      - "~/.gradle"
+#      - "~/.m2"
+
+  # Job templates.
+  job_template: &job_template
+    <<: *container_config
+    environment:
+      <<: *base_environment
+
+jobs:
+
+  # Database job.
+  migrate_database:
+    <<: *job_template
+    steps:
+#      - restore_cache:
+#          <<: *code_source_cache_key
+      - checkout
+#      - save_cache:
+#          <<: *code_source_cache_key
+#          paths:
+#            - ".git"
+#      - restore_cache:
+#          <<: *general_cache_key
+      - run:
+          name: Migrating database
+          command: cp deploy/runDbMigrations.sh . && chmod +x runDbMigrations.sh && ./runDbMigrations.sh && rm runDbMigrations.sh
+#      - save_cache:
+#          <<: *general_cache_key
+#          <<: *cache_paths
+
+  # Run unit tests job.
+  test:
+    <<: *job_template
+    steps:
+#      - restore_cache:
+#          <<: *code_source_cache_key
+      - checkout
+#      - save_cache:
+#          <<: *code_source_cache_key
+#          paths:
+#            - ".git"
+#      - restore_cache:
+#          <<: *general_cache_key
+      - run:
+          name: Sync git submodules
+          command: git submodule sync
+      - run:
+          name: Update git submodules
+          command: git submodule update --init
+      - run:
+          name: Update dependencies
+          command: cp deploy/buildDependencies.sh . && chmod +x buildDependencies.sh && ./buildDependencies.sh && rm buildDependencies.sh
+      - run:
+          name: Run unit tests
+          command: ./gradlew test -Penv=digitalOcean
+#      - save_cache:
+#          <<: *general_cache_key
+#          <<: *cache_paths
+
+  # Deploy job.
+  deploy:
+    <<: *job_template
+    steps:
+#      - restore_cache:
+#          <<: *code_source_cache_key
+      - checkout
+#      - save_cache:
+#          <<: *code_source_cache_key
+#          paths:
+#            - ".git"
+#      - restore_cache:
+#          <<: *general_cache_key
+      - run:
+          name: Update dependencies
+          command: cp deploy/buildDependencies.sh . && chmod +x buildDependencies.sh && ./buildDependencies.sh && rm buildDependencies.sh
+      - run:
+          name: Deploy application
+          command: cp deploy/deploy.sh . && chmod +x deploy.sh && ./deploy.sh && rm deploy.sh
+      - store_artifacts:
+          path: graffitab.jar
+          destination: bin/graffitab.jar
+#      - save_cache:
+#          <<: *general_cache_key
+#          <<: *cache_paths
+
+workflows:
+  version: 2
+
+  # Workflow for deploying feature branches to dev environment.
+  build-test-deploy-feature:
+    jobs:
+      - hold:
+          type: approval
+          filters:
+            branches:
+              ignore:
+                - master
+                - develop
+      - migrate_database:
+          requires:
+            - hold
+      - test:
+          requires:
+            - migrate_database
+      - deploy:
+          requires:
+            - test
+
+  # Workflow for deploying to dev or prod environments.
+  build-test-deploy:
+    jobs:
+      - migrate_database:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - test:
+          requires:
+            - migrate_database
+      - deploy:
+          requires:
+            - test

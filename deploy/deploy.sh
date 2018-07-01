@@ -67,6 +67,7 @@ echo "DEPLOYMENT_DIR = $DO_DEPLOYMENT_DIR"
 echo "AMAZON_S3_BUCKET_NAME = $AMAZON_S3_BUCKET_NAME"
 
 echo "==== Deploying to Digital Ocean - ${ENVIRON}01 ===="
+ssh-keyscan -H $DO_SRV01_DOMAIN >> ~/.ssh/known_hosts
 scp graffitab.jar $DO_USER@$DO_SRV01_DOMAIN:$DO_DEPLOYMENT_DIR
 scp digitalOcean/start.sh $DO_USER@$DO_SRV01_DOMAIN:$DO_DEPLOYMENT_DIR
 scp digitalOcean/stop.sh $DO_USER@$DO_SRV01_DOMAIN:$DO_DEPLOYMENT_DIR
@@ -85,6 +86,7 @@ echo "= Waiting for startup in ${ENVIRON}01 ="
 ssh $DO_USER@$DO_SRV01_DOMAIN 'source ~/environment.sh && chmod +x $DO_DEPLOYMENT_DIR/pollForStartup.sh && bash $DO_DEPLOYMENT_DIR/pollForStartup.sh' 2>&1
 
 echo "==== Deploying to Digital Ocean - ${ENVIRON}02 ===="
+ssh-keyscan -H $DO_SRV02_DOMAIN >> ~/.ssh/known_hosts
 scp graffitab.jar $DO_USER@$DO_SRV02_DOMAIN:$DO_DEPLOYMENT_DIR
 scp digitalOcean/start.sh $DO_USER@$DO_SRV02_DOMAIN:$DO_DEPLOYMENT_DIR
 scp digitalOcean/stop.sh $DO_USER@$DO_SRV02_DOMAIN:$DO_DEPLOYMENT_DIR
