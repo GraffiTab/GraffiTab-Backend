@@ -149,6 +149,18 @@ $ sudo service haproxy restart
 
 * Configure HAProxy using the configuration file outlined above, substituting the placeholders with the right values
 
+## Configure HTTPS (LetsEncrypt)
+
+Obtain a free SSL certificate from [here](sslforfree.com). To create the .pem file required for HTTPS, run the following commands:
+
+`openssl pkcs12 -export -out graffitab.pkcs12 -inkey private.key -in certificate.crt -certfile ca_bundle.crt`
+
+and then
+
+`openssl pkcs12 -in graffitab.pkcs12 -out dev.graffitab.com.pem -nodes`
+
+After this follow the normal procedure of copying the PEM file and restarting HAProxy as above.
+
 ## Troubleshooting
 
 ### Logging
