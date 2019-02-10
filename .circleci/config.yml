@@ -14,14 +14,16 @@ references:
         GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"'
 
   # Cache configuration.
-#  general_cache_key: &general_cache_key
-#    key: graffitab-{{ checksum "build.gradle" }}
-#  code_source_cache_key: &code_source_cache_key
-#    key: source-v1-{{ .Branch }}-{{ .Revision }}
-#  cache_paths: &cache_paths
-#    paths:
-#      - "~/.gradle"
-#      - "~/.m2"
+  database_cache_key: &database_cache_key
+    key: database-{{ checksum "build.gradle" }}
+  tests_cache_key: &tests_cache_key
+      key: tests-{{ checksum "build.gradle" }}
+  build_cache_key: &build_cache_key
+        key: build-{{ checksum "build.gradle" }}
+  cache_paths: &cache_paths
+    paths:
+      - "~/.gradle"
+      - "~/.m2"
 
   # Job templates.
   job_template: &job_template
@@ -35,35 +37,23 @@ jobs:
   migrate_database:
     <<: *job_template
     steps:
-#      - restore_cache:
-#          <<: *code_source_cache_key
       - checkout
-#      - save_cache:
-#          <<: *code_source_cache_key
-#          paths:
-#            - ".git"
-#      - restore_cache:
-#          <<: *general_cache_key
+      - restore_cache:
+          <<: *database_cache_key
       - run:
           name: Migrating database
           command: cp deploy/runDbMigrations.sh . && chmod +x runDbMigrations.sh && ./runDbMigrations.sh && rm runDbMigrations.sh
-#      - save_cache:
-#          <<: *general_cache_key
-#          <<: *cache_paths
+      - save_cache:
+          <<: *database_cache_key
+          <<: *cache_paths
 
   # Run unit tests job.
   test:
     <<: *job_template
     steps:
-#      - restore_cache:
-#          <<: *code_source_cache_key
       - checkout
-#      - save_cache:
-#          <<: *code_source_cache_key
-#          paths:
-#            - ".git"
-#      - restore_cache:
-#          <<: *general_cache_key
+      - restore_cache:
+          <<: *tests_cache_key
       - run:
           name: Sync git submodules
           command: git submodule sync
@@ -76,23 +66,17 @@ jobs:
       - run:
           name: Run unit tests
           command: ./gradlew test -Penv=digitalOcean
-#      - save_cache:
-#          <<: *general_cache_key
-#          <<: *cache_paths
+      - save_cache:
+          <<: *tests_cache_key
+          <<: *cache_paths
 
   # Deploy job.
   deploy:
     <<: *job_template
     steps:
-#      - restore_cache:
-#          <<: *code_source_cache_key
       - checkout
-#      - save_cache:
-#          <<: *code_source_cache_key
-#          paths:
-#            - ".git"
-#      - restore_cache:
-#          <<: *general_cache_key
+      - restore_cache:
+          <<: *build_cache_key
       - run:
           name: Update dependencies
           command: cp deploy/buildDependencies.sh . && chmod +x buildDependencies.sh && ./buildDependencies.sh && rm buildDependencies.sh
@@ -102,9 +86,9 @@ jobs:
       - store_artifacts:
           path: graffitab.jar
           destination: bin/graffitab.jar
-#      - save_cache:
-#          <<: *general_cache_key
-#          <<: *cache_paths
+      - save_cache:
+          <<: *build_cache_key
+          <<: *cache_paths
 
 workflows:
   version: 2
