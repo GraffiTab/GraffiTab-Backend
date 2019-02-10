@@ -15,4 +15,11 @@ echo "Timeout starting application (160s) -- failing build"
 exit 1
 else
 echo "Startup finished: $VAL"
+
+# Add empty lines to end of log to allow immediate follow-up deployment.
+COUNT=0
+while [ $COUNT -lt 6 ]; do
+echo "" >> /tmp/graffitab.log
+COUNT=$((COUNT+1))
+done
 fi
