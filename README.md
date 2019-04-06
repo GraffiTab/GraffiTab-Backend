@@ -18,7 +18,7 @@ $ docker-compose -v
 
 * So far, MySQL is still necessary locally. So install MySQL locally on Mac and import a database structure in it. The database
 should be called `graffitab`. Make note of your local IP address (not localhost) as it will be needed in the following step.
-* Create a file in `conf` directory called `application.properties` with the following content
+* Create a file in `conf` directory called `application.properties` with the following content:
 ```
 server.port=8091
 security.basic.enabled=false
