@@ -99,7 +99,7 @@ public class ActivityService {
 	private void addUserActivityToFollowersAsync(User currentUser, Activity activity) {
 		String userAgent = request.getHeader("User-Agent");
 
-		// Is client behind something?
+		// Is client behind something
 		String ipAddress = request.getHeader("X-FORWARDED-FOR");
 		if (ipAddress == null) {
 		    ipAddress = request.getRemoteAddr();
