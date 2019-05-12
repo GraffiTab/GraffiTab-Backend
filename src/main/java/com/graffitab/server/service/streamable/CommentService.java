@@ -16,7 +16,6 @@ import com.graffitab.server.service.paging.PagingService;
 import com.graffitab.server.service.user.UserService;
 
 import org.hibernate.Query;
-import org.javatuples.Pair;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,44 +57,40 @@ public class CommentService {
 
     public Comment postComment(Long streamableId, String text) {
         textUtilsService.validateText(text);
-        Pair<Streamable, Comment> resultPair = transactionUtils.executeInTransactionWithResult(() -> {
+        Comment resultPair = transactionUtils.executeInTransactionWithResult(() -> {
             Streamable streamable = streamableService.findStreamableById(streamableId);
-
             if (streamable != null) {
-                User currentUser = userService.getCurrentUser();
-
-                Comment comment = Comment.comment();
-                comment.setUser(currentUser);
-
                 if (log.isDebugEnabled()) {
                     log.debug("The text of the comment to be persisted is: " + text);
                 }
-
+                User currentUser = userService.findUserById(userService.getCurrentUser().getId());
+                Comment comment = Comment.comment();
+                comment.setUser(currentUser);
                 comment.setText(text);
                 comment.setStreamable(streamable);
                 streamable.getComments().add(comment);
-
-                return new Pair<>(streamable, comment);
+//                return new Pair<>(streamable, comment);
+                return comment;
             } else {
                 throw new RestApiException(ResultCode.STREAMABLE_NOT_FOUND, "Streamable with id " + streamableId + " not found");
             }
         });
 
-        Streamable streamable = resultPair.getValue0();
-        Comment comment = resultPair.getValue1();
+//        Streamable streamable = resultPair.getValue0();
+//        Comment comment = resultPair.getValue1();
+//
+//        // Add notification to the owner of the streamable.
+//        if (!streamable.getUser().equals(comment.getUser())) {
+//            notificationService.addCommentNotification(streamable.getUser(), comment.getUser(), streamable, comment, false);
+//        }
+//
+//        // Process comment for hashtags and mentions.
+//        textUtilsService.parseCommentForSpecialSymbols(comment, streamable);
+//
+//        // Add activity to each follower of the user.
+//        activityService.addCommentActivityAsync(comment.getUser(), streamable, comment);
 
-        // Add notification to the owner of the streamable.
-        if (!streamable.getUser().equals(comment.getUser())) {
-            notificationService.addCommentNotification(streamable.getUser(), comment.getUser(), streamable, comment, false);
-        }
-
-        // Process comment for hashtags and mentions.
-        textUtilsService.parseCommentForSpecialSymbols(comment, streamable);
-
-        // Add activity to each follower of the user.
-        activityService.addCommentActivityAsync(comment.getUser(), streamable, comment);
-
-        return comment;
+        return resultPair;
     }
 
     @Transactional

@@ -1,12 +1,13 @@
 package com.graffitab.server.persistence.model.activity;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-
 import com.graffitab.server.persistence.model.Comment;
 import com.graffitab.server.persistence.model.streamable.Streamable;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,11 +20,11 @@ public class ActivityComment extends Activity {
 
 	private static final long serialVersionUID = 1L;
 
-	@OneToOne(targetEntity = Streamable.class)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "commented_item_id")
 	private Streamable commentedStreamable;
 
-	@OneToOne(targetEntity = Comment.class)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "comment_id")
 	private Comment comment;
 

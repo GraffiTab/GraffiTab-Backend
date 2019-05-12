@@ -199,20 +199,17 @@ public abstract class Streamable implements Identifiable<Long> {
 	@Column(name = "text")
 	private String text;
 
-	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "asset_id")
 	private Asset asset;
 
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "gt_like",
 			   joinColumns = {@JoinColumn(name = "streamable_id")},
 			   inverseJoinColumns = {@JoinColumn(name = "user_id")})
-	@OrderColumn(name = "order_key")
 	private List<User> likers = new ArrayList<>();
 
-	@OneToMany(targetEntity = Comment.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@JoinColumn(name = "streamable_id", nullable = false)
-	@OrderColumn(name = "order_key")
+	@OneToMany(mappedBy = "streamable", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Comment> comments = new ArrayList<>();
 
 	@ElementCollection

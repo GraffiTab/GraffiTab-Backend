@@ -81,8 +81,8 @@ public abstract class Activity implements Identifiable<Long> {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 
-	@ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", insertable = false, updatable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", updatable = false)
 	private User user;
 
 	@Enumerated(EnumType.STRING)

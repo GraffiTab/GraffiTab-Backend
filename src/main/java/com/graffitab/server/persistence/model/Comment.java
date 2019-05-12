@@ -1,8 +1,19 @@
 package com.graffitab.server.persistence.model;
 
+import com.graffitab.server.persistence.dao.Identifiable;
+import com.graffitab.server.persistence.model.streamable.Streamable;
+import com.graffitab.server.persistence.model.user.User;
+import com.graffitab.server.persistence.util.BooleanToStringConverter;
+import com.graffitab.server.persistence.util.DateTimeToLongConverter;
+
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+import org.joda.time.DateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,16 +25,6 @@ import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
-import org.joda.time.DateTime;
-
-import com.graffitab.server.persistence.dao.Identifiable;
-import com.graffitab.server.persistence.model.streamable.Streamable;
-import com.graffitab.server.persistence.model.user.User;
-import com.graffitab.server.persistence.util.BooleanToStringConverter;
-import com.graffitab.server.persistence.util.DateTimeToLongConverter;
 
 @NamedQueries({
 	@NamedQuery(
@@ -50,12 +51,12 @@ public class Comment implements Identifiable<Long> {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 
-	@ManyToOne(targetEntity = Streamable.class)
-	@JoinColumn(name = "streamable_id", nullable = false, insertable = false, updatable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "streamable_id")
 	private Streamable streamable;
 
-	@OneToOne(targetEntity = User.class)
-	@JoinColumn(name = "user_id", nullable = false)
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
 	private User user;
 
 	@Column(name = "text", nullable = false)

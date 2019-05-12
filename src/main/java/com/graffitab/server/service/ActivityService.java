@@ -116,7 +116,8 @@ public class ActivityService {
 			// Add the user activity to each follower.
 			transactionUtils.executeInTransaction(() -> {
 				User inner = userService.findUserById(currentUser.getId());
-				inner.getActivity().add(activity);
+                activity.setUser(inner);
+                inner.getActivity().add(activity);
 			});
 
 			if (log.isDebugEnabled()) {

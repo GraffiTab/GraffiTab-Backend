@@ -1,11 +1,12 @@
 package com.graffitab.server.persistence.model.activity;
 
+import com.graffitab.server.persistence.model.streamable.Streamable;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-
-import com.graffitab.server.persistence.model.streamable.Streamable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +19,7 @@ public class ActivityLike extends Activity {
 
 	private static final long serialVersionUID = 1L;
 
-	@OneToOne(targetEntity = Streamable.class)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "liked_item_id")
 	private Streamable likedStreamable;
 

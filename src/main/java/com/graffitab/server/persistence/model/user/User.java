@@ -292,9 +292,7 @@ public class User implements Identifiable<Long>, UserDetails {
 	@OrderColumn(name = "order_key")
 	private List<Location> locations = new ArrayList<>();
 
-	@OneToMany(targetEntity = Activity.class, cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "user_id", nullable = false)
-	@OrderColumn(name = "order_key")
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Activity> activity = new ArrayList<>();
 
 	@Override

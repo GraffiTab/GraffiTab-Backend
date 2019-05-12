@@ -19,7 +19,7 @@ public class ActivityCreateStreamable extends Activity {
 
 	private static final long serialVersionUID = 1L;
 
-	@OneToOne(targetEntity = Streamable.class, fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "created_item_id")
 	private Streamable createdStreamable;
 

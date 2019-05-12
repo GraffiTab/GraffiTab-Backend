@@ -126,7 +126,7 @@ public class StreamableService {
 		});
 
 		// Add activity to all followers.
-//		activityService.addCreateStreamableActivityAsync(streamable.getUser(), streamable);
+		activityService.addCreateStreamableActivityAsync(streamable.getUser(), streamable);
 //		textUtilsService.parseStreamableTextForSpecialSymbols(streamable);
 
 		return streamable;

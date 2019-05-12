@@ -1,11 +1,12 @@
 package com.graffitab.server.persistence.model.activity;
 
+import com.graffitab.server.persistence.model.user.User;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-
-import com.graffitab.server.persistence.model.user.User;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +19,7 @@ public class ActivityFollow extends Activity {
 
 	private static final long serialVersionUID = 1L;
 
-	@OneToOne(targetEntity = User.class)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "followed_user_id")
 	private User followed;
 
