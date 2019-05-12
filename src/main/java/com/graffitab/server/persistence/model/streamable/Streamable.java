@@ -24,6 +24,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -167,8 +168,8 @@ public abstract class Streamable implements Identifiable<Long> {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 
-	@ManyToOne(targetEntity = User.class)
-	@JoinColumn(name = "user_id", insertable = false, updatable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", updatable = false)
 	private User user;
 
 	@Convert(converter = DateTimeToLongConverter.class)
@@ -198,7 +199,7 @@ public abstract class Streamable implements Identifiable<Long> {
 	@Column(name = "text")
 	private String text;
 
-	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(targetEntity = Asset.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "asset_id")
 	private Asset asset;
 
@@ -209,7 +210,7 @@ public abstract class Streamable implements Identifiable<Long> {
 	@OrderColumn(name = "order_key")
 	private List<User> likers = new ArrayList<>();
 
-	@OneToMany(targetEntity = Comment.class, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(targetEntity = Comment.class, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "streamable_id", nullable = false)
 	@OrderColumn(name = "order_key")
 	private List<Comment> comments = new ArrayList<>();

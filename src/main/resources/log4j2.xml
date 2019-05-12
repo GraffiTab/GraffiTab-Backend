@@ -44,7 +44,7 @@
             <appender-ref ref="STANDARD_CONSOLE" />
         </logger>
 
-        <logger name="org.hibernate.SQL" level="info" additivity="false">
+        <logger name="org.hibernate.SQL" level="debug" additivity="false">
             <appender-ref ref="FILE_APPENDER" />
             <appender-ref ref="STANDARD_CONSOLE" />
         </logger>

@@ -33,6 +33,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -283,9 +284,7 @@ public class User implements Identifiable<Long>, UserDetails {
     @CollectionTable(name="gt_user_metadata", joinColumns = @JoinColumn(name="user_id"))
 	private Map<String, String> metadataItems = new HashMap<>();
 
-	@OneToMany(targetEntity = Streamable.class, cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "user_id", nullable = false)
-	@OrderColumn(name = "order_key")
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Streamable> streamables = new ArrayList<>();
 
 	@OneToMany(targetEntity = Location.class, cascade = CascadeType.ALL, orphanRemoval = true)
